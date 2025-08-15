@@ -1,0 +1,2708 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>온독지수 학습 포털</title>
+  <style>
+    :root{--primary-color:#3498db;--secondary-color:#2ecc71;--accent-color:#f1c40f;--light-gray:#f4f7f6;--dark-text:#2c3e50;--light-text:#7f8c8d;--border-color:#ecf0f1;--danger-color:#e74c3c;--purple:#8e44ad}
+    *{box-sizing:border-box}
+    body{font-family:'Malgun Gothic','Apple SD Gothic Neo',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background-color:var(--light-gray);color:var(--dark-text)}
+    .view{display:none;max-width:1100px;margin:20px auto;padding:20px 30px;background:#fff;border-radius:15px;box-shadow:0 6px 25px rgba(0,0,0,.05);animation:fadeIn .5s}
+    .view.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+    h1,h2,h3{text-align:center;color:var(--dark-text)}
+    h2{border-bottom:2px solid var(--primary-color);padding-bottom:10px;margin-bottom:20px}
+    button,.button{display:inline-block;padding:12px 16px;font-size:1.05em;font-weight:700;color:#fff;background:var(--primary-color);border:none;border-radius:8px;cursor:pointer;text-decoration:none;transition:all .2s;text-align:center}
+    button:hover,.button:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.2)}
+    button:disabled{background-color:#bdc3c7;cursor:not-allowed}
+    button:disabled:hover{transform:none;box-shadow:none}
+    .back-button,#cancel-review-btn{background-color:#7f8c8d}
+    .modal{display:none;position:fixed;z-index:100;inset:0;overflow:auto;background-color:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:16px}
+    .modal-content{background:#fff;padding:20px;border:1px solid #888;width:90%;max-width:640px;text-align:left;border-radius:10px}
+    .modal-content textarea{width:100%;height:120px;margin-top:10px}
+    .modal-content button{margin-top:10px}
+    .dashboard-tabs{display:flex; gap:8px; justify-content:center; margin:8px 0 16px}
+    .dashboard-tab{background:var(--primary-color); opacity:.6}
+    .dashboard-tab.active{opacity:1}
+    /* 옅은 텍스트 */
+   .inline-muted{color:var(--light-text); font-size:.9em}
+    #vocab-enlarge-modal .modal-content{background-color:var(--accent-color)}
+    #vocab-enlarge-modal h3{color:var(--dark-text);font-size:2em;margin:10px 0}
+    #vocab-enlarge-modal p{font-size:1.1em}
+    .auth-view{max-width:420px;text-align:center}
+    .auth-view input{width:calc(100% - 22px);padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:5px}
+    .auth-view button{width:100%}
+    #main-menu-view .menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+    #main-menu-view .menu-item{background-color:var(--border-color);padding:20px;border-radius:10px;text-align:center;cursor:pointer;transition:all .2s}
+    #main-menu-view .menu-item:hover{background-color:#dfe6e9;transform:scale(1.02)}
+    #logout-button{background-color:var(--danger-color);float:right;padding:8px 14px;font-size:.9em}
+    .vocab-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;justify-content:center}
+    .book-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+    .vocab-card{perspective:1000px;width:100%;max-width:180px;height:86px;cursor:pointer;margin:0 auto}
+    .vocab-card-inner{position:relative;width:100%;height:100%;text-align:center;transform-style:preserve-3d;transition:transform .6s}
+    .vocab-card-inner.flipped{transform:rotateY(180deg)}
+    .vocab-card-front,.vocab-card-back{position:absolute;inset:0;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;border-radius:8px;padding:6px}
+    .vocab-card-front{background-color:var(--primary-color);color:#fff;font-weight:700}
+    .vocab-card-back{background-color:var(--accent-color);color:var(--dark-text);transform:rotateY(180deg);font-size:.92em;line-height:1.3}
+    .book-card{border:1px solid var(--border-color);border-radius:8px;padding:15px;transition:all .2s;display:flex;flex-direction:column;position:relative;background:#fff}
+    .book-card.clickable{cursor:pointer}
+    .book-card.clickable:hover{box-shadow:0 4px 15px rgba(0,0,0,.1);border-color:var(--primary-color)}
+    .book-card h4{margin:0 0 6px}
+    .book-card p{flex-grow:1;margin:6px 0;font-size:.94em}
+    .book-card .ondok-score{font-weight:700;color:var(--primary-color)}
+    .status-badge{position:absolute;top:10px;right:10px;color:#fff;padding:3px 8px;font-size:.8em;border-radius:5px;font-weight:700}
+    .status-badge.finished{background-color:var(--secondary-color)}
+    .status-badge.on-loan{background-color:#e67e22}
+    #my-dashboard-view .dashboard-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    #my-dashboard-view .widget{background:var(--border-color);padding:16px;border-radius:8px}
+    #my-dashboard-view .widget h3{margin-top:0}
+    #my-dashboard-view #unknown-words-list{display:flex;flex-wrap:wrap;gap:6px}
+    #my-dashboard-view #unknown-words-list span{background-color:var(--accent-color);padding:5px 10px;border-radius:5px;cursor:pointer}
+    #finish-test-btn,#add-to-library-btn,#submit-review-btn{background-color:var(--secondary-color)}
+    #students-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:.9em}
+    #students-table th,#students-table td{border:1px solid var(--border-color);padding:12px;text-align:left}
+    #students-table th{background-color:var(--primary-color);color:#fff}
+    #students-table tbody tr:nth-child(even){background-color:var(--light-gray)}
+    #students-table tbody tr:hover{background-color:#dcecf6}
+    #test-selection-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+    .test-version-card{background-color:var(--light-gray);border:1px solid var(--border-color);padding:15px;border-radius:10px;text-align:center}
+    .test-version-card button{width:100%}
+    .test-score-display{margin-top:10px;font-weight:700;color:var(--primary-color);height:20px}
+    #result-details-container{margin-top:30px;text-align:left}
+    .result-item{border-bottom:1px solid var(--border-color);padding:15px 5px}
+    .result-item p{margin:5px 0}
+    .user-answer.correct{color:#27ae60;font-weight:700}
+    .user-answer.incorrect{color:#c0392b;font-weight:700}
+    #rewards-display{position:fixed;top:20px;right:20px;background-color:var(--accent-color);color:var(--dark-text);padding:10px 20px;border-radius:20px;font-weight:700;font-size:1.05em;box-shadow:0 4px 10px rgba(0,0,0,.2);z-index:101;display:none}
+    #class-reviews-container{margin-top:20px}
+    .class-review-item{border:1px solid var(--border-color);border-left:4px solid var(--secondary-color);padding:12px;border-radius:8px;margin-bottom:10px;background-color:#fdfdfd}
+    .class-review-item .student-name{font-weight:700;color:var(--dark-text)}
+    .class-review-item .review-text{margin-top:6px;color:var(--light-text);font-style:italic}
+    .book-icon-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+    .book-icon-card{position:relative;min-height:180px;background-color:var(--primary-color);border-radius:10px;color:#fff;padding:14px;cursor:pointer;transition:transform .2s;box-shadow:5px 5px 15px rgba(0,0,0,.1);display:flex;flex-direction:column;justify-content:center}
+    .book-icon-card:hover{transform:scale(1.03)}
+    .book-icon-card-title{font-weight:700;font-size:1.05em}
+    .book-icon-card-author{font-size:.82em;margin-top:8px;opacity:.85}
+    #popular-books-container{margin-bottom:16px;border:2px dashed var(--accent-color);padding:16px;border-radius:10px;background:#fffef3}
+    #popular-books-container h2{border:none;margin-bottom:10px}
+    .popular-book-item{display:flex;align-items:center;padding:8px;border-radius:8px;cursor:pointer}
+    .popular-book-item:nth-child(odd){background-color:var(--light-gray)}
+    .popular-book-item:hover{background-color:#e0e0e0}
+    .popular-rank{font-size:1.2em;font-weight:700;margin-right:12px;color:var(--primary-color)}
+    .popular-reviews{margin-left:auto;color:var(--light-text)}
+    .recommendation-panel{padding:14px;border:1px solid var(--border-color);border-radius:10px;background:#f7fbff;margin-bottom:16px}
+    .recommendation-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:10px}
+    .recommend-card{border:1px solid var(--border-color);padding:12px;border-radius:10px;background:#fff;position:relative}
+    .recommend-card .rec-meta{color:#636e72;font-size:.88em;margin-top:6px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eee;color:#333;font-size:.85em;margin-right:6px;margin-top:4px}
+    #test-history-wrap{margin-top:22px;background:#fbfdff;border:1px solid var(--border-color);border-radius:10px;padding:16px}
+    #test-history-canvas{width:100%;height:280px;border:1px dashed #d7e6f5;border-radius:8px}
+    #learn-calendar{margin-top:16px}
+    .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .calendar-cell{border:1px solid var(--border-color);border-radius:8px;min-height:82px;padding:6px;font-size:.9em;position:relative;background:#fff}
+    .calendar-cell .date-num{position:absolute;top:6px;right:8px;color:#95a5a6;font-size:.85em}
+    .calendar-cell.has-data{background:#f2fbf7;border-color:#bfe9cc;cursor:pointer}
+    .calendar-legend{display:flex;gap:10px;align-items:center;margin:10px 0 0 0;color:#7f8c8d;font-size:.9em}
+    .legend-box{width:14px;height:14px;border-radius:4px;display:inline-block;background:#f2fbf7;border:1px solid #bfe9cc;margin-right:6px}
+    #class-detail-wrap{margin-top:16px;border:1px solid var(--border-color);border-radius:10px;padding:16px;background:#fbfbfb;display:none}
+    #class-detail-wrap h3{margin-top:0}
+    .divider{height:1px;background:#eee;margin:14px 0}
+    .inline-muted{color:#7f8c8d;font-size:.9em}
+  </style>
+</head>
+<body>
+  <div id="rewards-display"></div>
+  <div id="loading-overlay" class="modal" style="display:none;justify-content:center;align-items:center;">
+    <p style="font-size:1.2em;color:var(--dark-text);background:#fff;padding:16px 22px;border-radius:10px;">로딩 중...</p>
+  </div>
+
+  <!-- 로그인/가입 -->
+  <div id="login-view" class="view auth-view active">
+    <h2>온독지수 학습 포털 로그인</h2>
+    <input type="email" id="login-email-input" placeholder="아이디 (이메일)" />
+    <input type="password" id="login-password-input" placeholder="비밀번호" />
+    <button id="login-btn" type="button">로그인</button>
+    <button id="show-signup-btn" type="button" style="margin-top:8px;background:#2d3436">회원가입</button>
+    <button id="forgot-pw-btn" type="button" style="margin-top:8px;background:#636e72">비밀번호 찾기</button>
+    <p style="margin-top:12px;color:#636e72;font-size:.9em;">※ 데모 모드에서는 아무 이메일/비밀번호로 로그인 가능합니다.</p>
+  </div>
+
+  <div id="signup-view" class="view auth-view">
+    <h2>회원가입</h2>
+    <input type="text" id="signup-name-input" placeholder="이름" />
+    <input type="email" id="signup-email-input" placeholder="아이디 (이메일 주소)" />
+    <input type="password" id="signup-password-input" placeholder="비밀번호 (6자 이상)" />
+    <button id="signup-btn" style="background-color:var(--secondary-color);">가입하기</button>
+    <button id="back-to-login-btn" style="margin-top:8px;background:#2d3436">로그인 화면으로</button>
+  </div>
+
+  <!-- 메인 메뉴 -->
+<div id="main-menu-view" class="view">
+  <button id="logout-button">로그아웃</button>
+  <!-- ⬇️ 여기에 추가 -->
+  <button id="admin-login-btn" style="margin-left:8px;background:#8e44ad">관리자 로그인</button>
+  <!-- ⬆️ 여기까지 -->
+  <h2 id="welcome-message"></h2>
+  <div id="main-menu-grid" class="menu-grid"></div>
+</div>
+
+
+  <!-- 검사 선택/진행/결과 -->
+  <div id="test-selection-view" class="view">
+    <button class="back-button">메인으로</button>
+    <h2>온독지수 검사 버전 선택</h2>
+    <div id="test-selection-grid"></div>
+  </div>
+
+  <div id="test-view" class="view">
+    <button class="back-button" data-target="test-selection-view">버전 선택으로</button>
+    <h2 id="test-title"></h2>
+    <div id="test-question-container"></div>
+    <div style="text-align:center;margin-top:14px;">
+      <button id="finish-test-btn">결과 확인하기</button>
+    </div>
+  </div>
+
+  <div id="test-result-view" class="view">
+    <button class="back-button" data-target="test-selection-view">버전 선택으로</button>
+    <h2 id="result-title"></h2>
+    <p style="text-align:center;">획득한 온독지수는 <strong id="result-ondok-score" style="font-size:1.5em;"></strong> 입니다.</p>
+    <div id="result-details-container"></div>
+  </div>
+
+  <!-- 우리반 서재 세부 -->
+  <div id="class-book-detail-view" class="view">
+    <button class="back-button" data-target="class-library-view">우리반 서재로</button>
+    <h2 id="class-book-title"></h2>
+    <p id="class-book-desc"></p>
+    <div class="divider"></div>
+    <div>
+      <button id="start-reading-btn" style="background:var(--secondary-color)">이 책 읽을래요</button>
+      <span id="loan-status-text" class="inline-muted" style="margin-left:10px;"></span>
+    </div>
+    <div class="divider"></div>
+    <h3>이 책에 등장하는 사고도구어</h3>
+    <div id="class-book-keyvocab" class="vocab-grid"></div>
+    <div id="class-reviews-container"><h3 style="margin-top:18px;">✨ 우리반 친구들의 한줄평</h3></div>
+  </div>
+
+  <!-- 나의 한줄평 -->
+  <div id="my-reviews-view" class="view">
+    <button class="back-button">메인으로</button>
+    <h2>나의 한줄평 모아보기</h2>
+    <div id="my-reviews-list"></div>
+  </div>
+
+  <!-- 어휘 학습 -->
+  <div id="vocab-study-view" class="view">
+    <button class="back-button">메인으로</button>
+    <div style="display:flex;align-items:center;gap:8px;justify-content:space-between;">
+      <div style="flex:1"><h2 style="margin-bottom:6px;">사고도구어 전체 학습</h2>
+        <div style="color:var(--light-text);font-weight:normal;font-size:1.02em;">어휘 카드를 클릭하여 뜻을 확인하고, 한 번 더 클릭하여 학습하세요.</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="show-learned-btn" style="background:var(--purple)">이번 세션 학습 어휘</button>
+        <button id="show-learn-history-btn" style="background:#2d3436">어휘 학습 기록</button>
+      </div>
+    </div>
+    <div id="vocab-grid-full" class="vocab-grid" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- 일반 도서 상세 -->
+  <div id="book-detail-view" class="view">
+    <button class="back-button">메인으로</button>
+    <h2 id="book-detail-title"></h2>
+    <p id="book-detail-desc"></p>
+    <h3>주요 어휘 학습</h3>
+    <p style="text-align:center;color:var(--light-text);">어휘를 클릭하면 '나의 대시보드' 학습기록에 반영됩니다.</p>
+    <div id="book-vocab-grid" class="vocab-grid"></div>
+    <div style="text-align:center;margin-top:12px;">
+      <button id="add-to-library-btn">이 책을 나의 서재에 추가</button>
+    </div>
+  </div>
+
+  <!-- 나의 서재 -->
+  <div id="my-library-view" class="view">
+    <button class="back-button">메인으로</button>
+    <h2>나의 서재</h2>
+    <p style="text-align:center;color:var(--light-text);">읽고 있는 책을 클릭하면 한줄평을 남기고 '읽기 완료' 상태로 변경할 수 있습니다.</p>
+    <div id="my-library-content">
+      <h3>읽고 있는 책</h3>
+      <div id="reading-now-list" class="book-list"></div>
+      <h3 style="margin-top: 30px;">읽기를 완료한 책</h3>
+      <div id="finished-list" class="book-list"></div>
+    </div>
+  </div>
+
+  <!-- 나의 대시보드 -->
+  <!-- 나의 대시보드 -->
+<div id="my-dashboard-view" class="view">
+  <button class="back-button">메인으로</button>
+  <h2>나의 대시보드</h2>
+
+  <!-- 탭 버튼 -->
+  <div class="dashboard-tabs">
+    <button class="dashboard-tab active" data-tab="summary">요약</button>
+    <button class="dashboard-tab" data-tab="read">내가 읽은 책</button>
+  </div>
+
+  <!-- 요약 탭 -->
+  <div id="dashboard-tab-summary">
+    <div class="dashboard-grid">
+      <div class="widget">
+        <h3>평균 온독지수</h3>
+        <p id="dashboard-ondok" style="font-size:2em; text-align:center;"></p>
+      </div>
+
+      <div class="widget">
+        <h3>읽은 책</h3>
+        <p id="dashboard-finished-books" style="font-size:2em; text-align:center;"></p>
+      </div>
+
+      <div class="widget">
+        <h3>읽는 중인 책</h3>
+        <div id="dashboard-reading-list"></div>
+      </div>
+
+      <div class="widget" style="grid-column: 1 / -1;">
+        <h3>학습이 필요한 어휘(요약)</h3>
+        <div id="unknown-words-list"></div>
+      </div>
+    </div>
+
+    <!-- 온독지수 히스토리 그래프 -->
+    <div id="test-history-wrap" style="margin-top:22px;background:#fbfdff;border:1px solid var(--border-color);border-radius:10px;padding:16px">
+      <h3 style="margin:0 0 8px 0;">📈 온독지수 측정 히스토리</h3>
+      <canvas id="test-history-canvas"></canvas>
+      <div class="inline-muted" style="margin-top:6px;">최근까지의 측정 결과(날짜-점수)를 그래프로 표시합니다.</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 필요한 어휘 상세 -->
+    <h3 style="text-align:left;margin:10px 0 6px;">학습이 필요한 어휘(상세)</h3>
+    <div id="needed-words-detail" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+
+    <div class="divider"></div>
+
+    <!-- 어휘 학습 캘린더 -->
+    <h3 style="text-align:left;margin:10px 0 6px;">나의 학습 기록</h3>
+    <div id="learn-calendar">
+      <div class="calendar-legend">
+        <span class="legend-box"></span>초록 칸: 해당 날짜에 학습한 어휘가 있습니다. 클릭하면 목록이 열립니다.
+      </div>
+      <div id="calendar-grid" class="calendar-grid" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- 내가 읽은 책 탭 -->
+  <div id="dashboard-tab-read" style="display:none;">
+    <h3 style="text-align:left;color:var(--primary-color);">내가 읽은 책 · 한줄평 · 읽은 날짜</h3>
+    <div id="my-read-books-list" class="book-list"></div>
+  </div>
+</div>
+<!-- 여기까지가 대시보드, 바로 다음 섹션이 우리반 서재 -->
+
+
+  <!-- 우리반 서재 -->
+  <div id="class-library-view" class="view">
+    <button class="back-button">메인으로</button>
+    <h2>우리반 서재</h2>
+
+    <div class="recommendation-panel">
+      <strong>📚 현재 나의 온독지수에 맞는 책은?</strong>
+      <div id="recommendation-note" class="inline-muted" style="margin-top:4px;">최근 평균 온독지수와 가까운 책을 추천합니다.</div>
+      <div id="recommendation-list" class="recommendation-list"></div>
+    </div>
+
+    <div id="popular-books-container">
+      <h2>🏆 우리반에서 가장 인기있는 책은?</h2>
+      <div id="popular-books-list"></div>
+    </div>
+    <hr />
+    <div id="class-library-list" class="book-icon-list"></div>
+
+    <div id="class-detail-wrap">
+      <h3 id="class-detail-title"></h3>
+      <div id="class-detail-desc" class="inline-muted" style="margin-bottom:10px;"></div>
+      <div>
+        <button id="class-detail-start" style="background:var(--secondary-color)">이 책 읽을래요</button>
+        <span id="class-detail-loan" class="inline-muted" style="margin-left:10px;"></span>
+      </div>
+      <div class="divider"></div>
+      <div><strong>이 책에 등장하는 사고도구어</strong></div>
+      <div id="class-detail-vocab" class="vocab-grid" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- 교사 대시보드 -->
+  <!-- 관리자(교사) 페이지 -->
+<div id="admin-dashboard-view" class="view">
+  <button class="back-button">메인으로</button>
+  <h2>관리자 페이지</h2>
+
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start;">
+    <!-- 좌측: 우리반 학생 대시보드 탭/목록 -->
+    <div style="background:var(--border-color);padding:12px;border-radius:10px;">
+      <h3 style="margin-top:0;">우리반 학생 대시보드</h3>
+      <div id="admin-student-list" style="display:flex;flex-direction:column;gap:6px; max-height:60vh; overflow:auto;"></div>
+    </div>
+
+    <!-- 우측: 우리반 대시보드 -->
+    <!-- 탭 버튼 -->
+<div id="admin-right-tabs" style="display:flex;gap:8px;margin-bottom:8px;">
+  <button id="adm-tab-class" class="button" style="background:#3498db;">우리반 대시보드</button>
+  <button id="adm-tab-rewards" class="button" style="background:#8e44ad;">보상 확인하기</button>
+</div>
+
+<!-- (기존) 우리반 대시보드 패널: 그대로 유지 -->
+ <div id="class-dashboard-panel" class="recommendation-panel" style="background:#fff; grid-column:1 / -1;">
+
+ <!-- (1) 우리반 독서 온도계 -->
+<div id="class-reading-thermometer" style="margin:12px 0;">
+  <strong>📊 우리반 독서 온도계</strong>
+  <div style="background:#eef5fc; border-radius:10px; height:30px; width:100%; overflow:hidden; border:1px solid #d7e6f5;">
+    <div id="thermo-bar"
+         style="background:#ff6b6b; height:100%; width:0%; transition:width 800ms;">
+    </div>
+  </div>
+  <div id="thermo-label" class="inline-muted" style="margin-top:6px;">0 / 500 권</div>
+</div>
+
+
+        <!-- (2) 우리반 독서왕 순위 -->
+        <div class="divider"></div>
+        <div style="margin:12px 0;">
+          <strong>🏅 우리반 독서왕 순위</strong>
+          <ol id="class-reading-king" style="margin-top:8px;"></ol>
+        </div>
+
+        <!-- (3) 우리반 사고도구어 순위 (워드클라우드) -->
+        <div class="divider"></div>
+        <div style="margin:12px 0;">
+          <strong>🧠 우리반 사고도구어 순위 (Word Cloud)</strong>
+          <canvas id="class-wordcloud-canvas" style="width:100%;height:240px;border:1px dashed #d7e6f5;border-radius:8px"></canvas>
+        </div>
+
+        <!-- (4) 우리반 평균 독서 권수 -->
+        <div class="divider"></div>
+        <div style="margin:12px 0;">
+          <strong>📚 우리반 평균 독서 권수</strong>
+          <div id="class-avg-books" style="margin-top:6px;font-size:1.2em;"></div>
+
+</div>
+
+<!-- (신규) 보상 확인/관리 패널 -->
+<div id="admin-rewards-panel" class="recommendation-panel" style="background:#fff; grid-column:1 / -1;">
+  <h3 style="margin:0 0 10px;">보상 확인/관리</h3>
+
+  <table id="rewards-table" style="width:100%; border-collapse:collapse;">
+  <thead>
+    <tr>
+      <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border-color);">이름</th>
+      <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border-color);">이메일</th>
+      <th style="text-align:right; padding:8px; border-bottom:1px solid var(--border-color);">현재 보상</th>
+      <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border-color);">최근 보상내역</th>
+      <th style="text-align:center; padding:8px; border-bottom:1px solid var(--border-color);">추가 지급</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+</div>
+
+        </div>
+      </div>
+
+      <!-- 학생 선택 시 우측 패널을 학생 대시보드로 전환 -->
+      <div id="admin-student-dashboard" style="display:none;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <h3 id="adm-dash-title" style="margin:0;">학생 대시보드</h3>
+          <button id="adm-back-to-class" class="button" style="background:#636e72;">우리반 대시보드 보기</button>
+        </div>
+
+        <div class="dashboard-grid" style="margin-top:12px;">
+          <div class="widget"><h3>평균 온독지수</h3><p id="adm-ondok" style="font-size:2em; text-align:center;"></p></div>
+          <div class="widget"><h3>읽은 책</h3><p id="adm-finished-count" style="font-size:2em; text-align:center;"></p></div>
+          <div class="widget"><h3>읽는 중</h3><div id="adm-reading-list"></div></div>
+          <div class="widget" style="grid-column: 1 / -1;"><h3>학습이 필요한 어휘</h3><div id="adm-unknown-words"></div></div>
+        </div>
+
+        <div id="adm-test-history-wrap" class="recommendation-panel" style="background:#fbfdff;">
+          <h3 style="margin:0 0 8px 0;">📈 온독지수 측정 히스토리</h3>
+          <canvas id="adm-test-history-canvas" style="width:100%;height:260px;border:1px dashed #d7e6f5;border-radius:8px;"></canvas>
+        </div>
+
+        <div class="divider"></div>
+        <h3 style="text-align:left;margin:10px 0 6px;">학습이 필요한 어휘(상세)</h3>
+        <div id="adm-needed-words-detail" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+
+<div class="divider"></div>
+<h3 style="text-align:left;margin:10px 0 6px;">보상 내역</h3>
+<div id="adm-reward-log" class="recommendation-panel" style="background:#fff;">
+  <!-- JS에서 최근 5개 보상 내역을 렌더링 -->
+</div>
+
+        <div class="divider"></div>
+        <h3 style="text-align:left;margin:10px 0 6px;">학습 기록 캘린더</h3>
+        <div class="calendar-legend"><span class="legend-box"></span>초록 칸: 해당 날짜에 학습한 어휘가 있습니다.</div>
+        <div id="adm-calendar-grid" class="calendar-grid" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- 모달 -->
+  <div id="alert-modal" class="modal"><div class="modal-content"><p id="alert-message"></p><button id="close-modal-btn">확인</button></div></div>
+  <div id="review-modal" class="modal"><div class="modal-content"><h3 id="review-modal-title"></h3><p>도서를 모두 읽고난 후 독서 질문을 입력해주세요.</p><textarea id="review-textarea" placeholder="여기에 독서 질문을 작성하세요..."></textarea><button id="submit-review-btn">제출하고 읽기 완료</button><button id="cancel-review-btn">취소</button></div></div>
+  <div id="vocab-enlarge-modal" class="modal"><div class="modal-content"><h3 id="enlarge-vocab-word"></h3><p id="enlarge-vocab-def"></p></div></div>
+  <div id="learn-history-modal" class="modal"><div class="modal-content"><h3>📒 어휘 학습 기록</h3><div id="learn-history-content"></div><button id="close-learn-history-btn" style="margin-top:12px;">닫기</button>
+  </div>
+</div>
+<div id="pw-modal" class="modal">
+  <div class="modal-content">
+    <h3>비밀번호 찾기</h3>
+    <p class="inline-muted">데모 모드: 이름+이메일이 일치하면 저장된 비밀번호를 보여줍니다.<br>실서비스: 입력한 이메일로 재설정 메일을 보냅니다.</p>
+    <input id="pw-name" type="text" placeholder="이름" style="width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:6px;">
+    <input id="pw-email" type="email" placeholder="아이디(이메일)" style="width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:6px;">
+    <button id="pw-search-btn" style="background:var(--secondary-color)">찾기</button>
+    <button id="pw-close-btn" style="margin-left:6px;background:#2d3436">닫기</button>
+  </div>
+</div>
+
+
+  <!-- Firebase (선택) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+  <script>
+    /**********************
+     *  설정 & 데이터
+     **********************/
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-K0UKHBmtDER31g7M-nPjbUYR8-jK-u8",
+      authDomain: "ondok-b2a56.firebaseapp.com",
+      projectId: "ondok-b2a56",
+      storageBucket: "ondok-b2a56.firebasestorage.app",
+      messagingSenderId: "570537618646",
+      appId: "1:570537618646:web:c5be1967e85561ecfaad77"
+    };
+
+    /* ------ 사전/도서 데이터 (샘플만) ------ */
+   const vocabData = {
+"검사":"어떤 일이나 대상을 조사하여 옳고 그름이나 좋고 나쁨을 알아냄.‣ 철저한 검사를 통해 불량률을 줄였다.",
+"결과":"어떤 일이나 과정이 끝난 후의 상태나 현상.‣ 이 경기의 승리는 노력의 결과이다.",
+"결정":"무엇을 어떻게 하기로 분명하게 정함. 또는 그렇게 정해진 내용.‣ 그 문제에 대해서 아직도 결정을 못했습니다.",
+"경험":"자신이 실제로 해 보거나 겪어 봄. 또는 거기서 얻은 지식이나 기능.‣ 실전 경험이 많은 선수.",
+"계획":"앞으로 할 일의 절차, 방법, 규모 따위를 미리 헤아려 작정함. 또는 그 내용.‣ 치밀한 사전 계획을 세우다.",
+"관계":"1. 둘 이상의 사람, 사물, 현상 따위가 서로 관련을 맺거나 관련이 있음. 또는 그런 관련.‣ 불편한 관계를 정상화시키다. 2. 어떤 방면이나 영역에 관련을 맺고 있음. 또는 그 방면이나 영역. ‣ 무역 관계의 일에 종사하다.",
+"교환":"1. 물건과 물건, 사람과 사람 따위를 서로 바꿈.‣ 새 물건으로 교환해 줄 수 있다. 2. 어떤 물품을 다른 사람에게 주고, 그 값으로 같은 가치의 다른 물품이나 화폐를 얻음.‣ 화폐는 물품 교환을 매개하는 역할을 한다.",
+"규칙":"1. 여러 사람이 지키도록 정해 놓은 법칙.‣ 학급 규칙을 바르게 세울 필요가 있다. 2. 어떤 일이나 현상에 일정하게 나타나는 질서나 법칙.‣ 야구는 규칙을 알고 보아야 더 재미있다.",
+"내용":"1. 그릇이나 상자 등의 안에 든 것.‣ 가방의 내용. 2. 사물이나 일의 속을 이루는 사정이나 형편. ‣ 연구 내용. 3. 말, 글, 그림, 영화 등의 줄거리. 또는 그것들로 전하고자 하는 것. ‣ 면담 내용.",
+"능력":"어떤 일을 할 수 있는 힘.‣ 해결 능력.",
+"단순":"복잡하지 않고 간단한 것.‣ 단순 가공.",
+"목적":"이루려고 하는 일이나 나아가고자 하는 방향.‣ 최종 목적.",
+"문제":"1. 답을 요구하는 물음. ‣ 연습 문제를 내다. 2. 논쟁이나 논의, 연구 등의 대상이 되는 일.‣ 인구 증가 문제. 3. 난처하거나 해결하기 어려운 일. ‣ 문제가 많다",
+"반대":"1. 어떤 것이 다른 것과 모양, 위치, 방향, 속성 등에서 완전히 다름. ‣ 반대 방향. 2. 어떤 행동이나 의견 등을 따르지 않고 거스름.‣ 반대 의견.",
+"방법":"어떤 일을 해 나가기 위한 수단이나 방식. ‣ 공부 방법.",
+"방향":"1. 어떤 지점이나 방위를 향하는 쪽.‣ 가로 방향. 2. 어떤 일이 일정한 목표를 향하여 나아가는 쪽.‣ 발전 방향.",
+"복잡하다":"1. 일, 감정 등이 정리하기 어려울 만큼 여러 가지가 얽혀 있다.‣ 이 드라마는 등장인물들의 관계가 너무 복잡하다. 2. 어떤 것들이 한곳에 복작거려 어수선하다.‣ 전철 안이 승객들로 복잡하다.",
+"부분":"전체를 이루는 작은 범위. 또는 전체를 몇 개로 나눈 것의 하나.‣ 동생은 공부하다가 이해가 안 되는 부분을 내게 묻곤 한다.",
+"비교":"둘 이상의 것을 함께 놓고 어떤 점이 같고 다른지 살펴봄.‣ 자신을 잘 알기 위해서는 우선 남과 비교를 해 보는 것이 필요하다.",
+"사실":"1. 실제로 있었던 일이나 현재에 있는 일.‣ 사실을 나타내다. 2. 겉으로 드러나지 아니한 일을 솔직하게 말할 때 쓰는 말. ‣ 사실은 내가 먹었어. 3. 자신의 말이 옳다고 강조할 때 쓰는 말. ‣ 사실이지, 우리 어머니만큼 나를 사랑해 주시는 분은 세상에 없다.",
+"선택":"여럿 가운데서 필요한 것을 골라 뽑음.‣ 학생들은 원하는 수업을 들을 수 있는 선택의 자유가 있다.",
+"설명":"어떤 것을 남에게 알기 쉽게 풀어 말함. 또는 그런 말.‣ 선생님께서는 질문에 대해 자세히 설명을 해 주셨다.",
+"성격":"1. 개인이 가지고 있는 고유한 성질이나 품성.‣ 긍정적인 성격. 2. 어떤 것이 본래 가지고 있는 자체의 성질이나 모습.‣ 보수적인 성격.",
+"소개":"1. 둘 사이에서 양쪽의 일이 잘 진행되게 힘씀.‣ 직업 소개. 2. 서로 모르는 사람들 사이에서 양쪽이 알고 지내도록 관계를 맺어 줌.‣ 친구 소개. 3. 잘 알려지지 않았거나, 모르는 사실이나 내용을 잘 알도록 해 주는 설명. ‣ 사건 소개.",
+"안내":"1. 어떤 내용을 소개하여 알려 줌. 또는 그런 일.‣ 관광 안내. 2. 사정을 잘 모르는 어떤 사람을 가고자 하는 곳까지 데려다주거나 그에게 여러 가지 사정을 알려 줌.‣ 집주인의 안내.",
+"연결":"둘 이상의 사물이나 현상 등이 서로 이어지거나 관계를 맺음.‣ 자연스러운 연결.",
+"의미":"1. 말이나 글, 기호 등이 나타내는 뜻.‣ 단어의 의미. 2. 어떠한 일, 행동, 현상 등에 숨어 있는 속뜻.‣ 그의 시에서 꽃은 아름다운 여인이라는 의미로 쓰였다. 3. 어떠한 일, 행동, 현상 등이 지닌 가치나 중요성. ‣ 삶의 의미.",
+"이상":"1. 수량이나 정도가 일정한 기준을 포함하여 그보다 많거나 나은 것. ‣ 이십 세 이상. 2. 서류나 강연 등에 마지막에 써서 ‘끝’의 뜻을 나타내는 말.‣ 그럼 그렇게 결론을 짓도록 하죠. 이상입니다. 3. 이미 그렇게 된 바에는. ‣ 이미 들킨 이상 더 거짓말을 할 이유가 없었다.",
+"이용":"1. 대상을 필요에 따라 이롭거나 쓸모가 있게 씀.‣ 자원의 이용. 2. 다른 사람이나 대상을 자신의 이익을 채우기 위한 수단으로 씀.‣ 이용이 어렵다.",
+"이해":"1. 무엇이 어떤 것인지를 앎. 또는 무엇이 어떤 것이라고 받아들임. ‣ 이해가 가다. 2. 무엇을 깨달아 앎. 또는 잘 알아서 받아들임.‣ 논리적 이해. 3. 남의 형편을 알고 받아들임. ‣ 이해를 구하다.",
+"재료":"1. 물건을 만드는 데 쓰이는 것.‣ 건축 재료. 2. 어떤 일을 하는 데 쓰이는 거리.‣ 강의 재료.",
+"정리":"1. 흐트러지거나 어수선한 상태에 있는 것을 한데 모으거나 치움. ‣ 옷장 정리. 2. 종류에 따라 체계적으로 나누거나 모음.‣ 서류 정리. 3. 다른 사람과의 관계를 끝냄. ‣ 관계 정리.",
+"정확도":"바르고 확실한 정도.‣ 우리 실험은 정확도가 요구되어 조금의 오차도 허용할 수 없다.",
+"종류":"1. 어떤 기준에 따라 여러 가지로 나눈 갈래.‣ 꽃 가게에는 다양한 종류의 꽃이 있다. 2. 어떤 갈래에 속하는 것들.‣ 추석 선물로 고기 종류가 좋을 것 같다 3. 사물의 갈래를 세는 단위. ‣ 세 종류의 맛으로 이루어진 아이스크림 케이크를 샀다.",
+"주변":"어떤 대상을 싸고 있는 둘레. 또는 가까운 범위 안.‣ 그는 성격이 다정해서 주변 사람들을 항상 잘 챙긴다.",
+"준비":"미리 마련하여 갖춤.‣ 그는 어제 시험 준비 때문에 밤을 샜다.",
+"중심":"1. 어떤 것의 한가운데.‣ 무게 중심이 옆으로 쏠려 있나 보다. 2. 중요하고 기본이 되는 부분.‣ 너는 어떻게 모든 일을 너 중심으로만 생각하니?",
+"중요":"귀중하고 꼭 필요함.‣ 나는 중요 부분에 밑줄을 치면서 책을 읽었다.",
+"지도":"1. 어떤 목적이나 방향으로 남을 가르쳐 이끎.‣ 선배님의 많은 지도를 바랍니다. 2. 유도에서 금지된 기술 및 동작을 할 때 받는 주의.‣ 지도를 주다.",
+"직접":"중간에 다른 사람이나 물건 등이 끼어들지 않고 바로 연결되는 관계.‣ 직접 경험한 것은 아이들에게 잊히지 않는 가르침을 준다.",
+"취소":"이미 발표한 것을 거두어들이거나 약속한 것 또는 예정된 일을 없앰.‣ 갑자기 취소가 되는 바람에 다른 애들도 아쉬워하겠구나.",
+"프로그램":"1. 어떤 행사의 진행 계획이나 순서를 적은 목록.‣ 국립 박물관에서는 여러 교육 프로그램이 운영되고 있다. 2. 라디오나 텔레비전 등에서 시간별로 나뉘어 방송되는 내용. ‣ 어제 밤 텔레비전에서 한 코미디 프로그램 봤어?",
+"행동":"몸을 움직여 어떤 일이나 동작을 함.‣ 하늘을 날 수 있는 새는 행동반경이 매우 넓다.",
+"가능":"할 수 있거나 될 수 있음. ‣ 주차 가능.",
+"간결성":"글이나 말, 혹은 예술 작품 등이 군더더기가 없고 간단하며 깔끔한 성질. ‣ 문장의 간결성.",
+"간략하다":"간단하고 짤막하다. ‣ 간략한 편지.",
+"간접":"둘이 바로 연결되지 않고 중간에 다른 것을 통해서 이어짐. ‣ 간접 경험.",
+"감각":"1. 눈, 코, 귀, 혀, 피부를 통하여 자극을 느낌. ‣ 감각이 둔하다. 2. 무엇에 대하여 느끼고 이해한 것을 통하여 판단하거나 표현하는 능력. ‣ 예술 감각",
+"강력":"힘이나 영향이 강함. ‣ 강력 세제.",
+"강제":"권력이나 힘으로 남이 원하지 않는 일을 억지로 시킴. ‣ 강제 노동.",
+"강조":"어떤 것을 특히 두드러지게 하거나 강하게 주장함. ‣ 강조 사항.",
+"개혁":"불합리한 제도나 기구 등을 새롭게 고침. ‣ 종교 개혁.",
+"거부":"요구, 제안 등을 받아들이지 않음. ‣ 참가 거부.",
+"검색":"1. 수상한 사람이나 물건을 살펴 조사하는 것. ‣ 검색을 당하다. 2. 책이나 컴퓨터에서 필요한 자료를 찾아내는 것. ‣ 도서 검색.",
+"견해":"사람, 사물이나 현상에 대하여 사람마다 가지는 의견이나 생각. ‣ 부정적 견해.",
+"결론":"1. 말이나 글을 마무리하는 부분. ‣ 결론 부분. 2. 어떤 문제에 대하여 마지막으로 내린 판단. ‣ 결론을 내리다.",
+"경쟁":"어떤 분야에서 이기거나 앞서려고 서로 겨룸. ‣ 무한 경쟁.",
+"고려":"어떤 일을 하는 데 여러 가지 상황이나 조건을 신중하게 생각함. ‣ 고려 대상.",
+"고정":"1. 한번 정한 내용을 변경하지 않음. ‣ 고정 비용. 2. 한곳에서 움직이지 않음. 또는 움직이지 않게 함. ‣ 고정 상태.",
+"공개":"1. 어떤 사실이나 사물, 내용 등을 사람들에게 널리 알림. ‣ 공개 모집. 2. 어떤 장소를 사람들이 드나들 수 있도록 열어 놓음. ‣ 장소 공개.",
+"공동":"둘 이상의 사람이나 단체가 어떤 일을 함께 하거나 동등한 자격으로 관계됨. ‣ 공동 1위.",
+"공통":"여럿 사이에 서로 같거나 관계됨. ‣ 공통 주제.",
+"공평":"한쪽으로 치우치지 않고 모든 사람에게 고름. ‣ 교육의 공평.",
+"과장":"사실에 비해 지나치게 크거나 좋게 부풀려 나타냄. ‣ 과장 광고.",
+"과정":"어떤 일이나 현상이 계속 진행되는 동안 혹은 그 사이에 일어난 일. ‣ 발달 과정.",
+"관련":"둘 이상의 사람, 사물, 현상 등이 서로 영향을 주고받도록 관계를 맺고 있음. 또는 그 관계. ‣ 관련 기사.",
+"관리":"1. 어떤 일을 책임지고 맡아 처리함. ‣ 선거 관리. 2. 시설이나 건물을 유지하거나 개량하는 일을 맡아 함.‣ 문화재 관리. 3. 사람을 지휘하거나 감독함. ‣ 고객 관리. 4. 사람의 몸이나 동물, 식물 등을 보살피거나 돌봄. ‣ 질병 관리.",
+"관찰":"사물이나 현상을 주의 깊게 자세히 살펴봄. ‣ 세밀한 관찰.",
+"관측":"1. 눈이나 기계로 자연 현상을 자세히 살펴보아 어떤 사실을 짐작하거나 알아냄. ‣ 우주관측. 2. 어떤 일이나 상황을 자세히 살피어 이후의 일을 짐작함. ‣ 희망적인 관측.",
+"구별":"성질이나 종류에 따라 차이가 남. ‣ 남녀 구별.",
+"구분":"어떤 기준에 따라 전체를 몇 개의 부분으로 나눔. ‣ 공사 구분.",
+"권장":"어떤 일을 권하고 장려함. ‣ 권장 도서.",
+"균형":"어느 한쪽으로 기울거나 치우치지 않은 상태. ‣ 균형 감각.",
+"극복":"나쁜 조건이나 힘든 일 등을 이겨 냄. ‣ 고난 극복.",
+"근거":"1. 생활이나 활동 등의 근본이 되는 곳. ‣ 활동의 근거. 2. 어떤 일이나 의견 등에 그 근본이 됨. ‣ 판단의 근거.",
+"급격":"변화의 속도가 매우 빠르다. ‣ 급격한 발달.",
+"긍정":"어떤 사실이나 생각이 맞다거나 옳다고 인정함. ‣ 긍정의 대답.",
+"기능":"작업을 정확하고 손쉽게 해주는 기술적인 재주와 능력. ‣ 특별한 기능.",
+"기능":"1. 어떤 역할이나 작용을 함. 또는 그런 역할이나 작용.‣ 소화 기능. 2. 권한이나 직책, 능력 등에 따른 어떤 분야에서의 역할과 작용.‣ 입법부의 기능.",
+"기법":"기교와 방법. ‣ 요리 기법.",
+"기본":"1. 무엇을 하기 전에 가장 먼저 해야 하는 것이나 꼭 있어야 하는 것. ‣ 기본 동작. 2. 무엇을 이루는 데 가장 중심이 되고 중요한 것. ‣ 기본 이념.",
+"기술":"1. 과학 이론을 실제로 적용하여 인간 생활에 쓸모가 있게 하는 수단. ‣ 건축 기술. 2. 사물을 잘 다루거나 사용할 수 있는 방법이나 능력. ‣ 공사 기술.",
+"기준":"구별하거나 정도를 판단하기 위하여 그것과 비교하도록 정한 대상이나 잣대. ‣ 심사 기준.",
+"기초":"1. 사물이나 일 등의 기본이 되는 바탕. ‣ 기초 실력. 2. 건물이나 다리 등을 지을 때 그 무게를 받치기 위해 만든 밑받침. ‣ 기초 공사.",
+"기호":"어떤 뜻을 나타내기 위해 쓰는 여러 가지 표시. ‣ 발음 기호.",
+"나열":"1. 차례대로 죽 벌여 늘어놓음. ‣ 지식의 나열. 2. 나란히 줄을 지음. ‣ 나열을 하다.",
+"내부":"1. 사물의 안쪽 공간. ‣ 내부 수리. 2. 사회 조직이나 구조의 안쪽 범위. ‣ 내부 방침.",
+"다양성":"모양, 색, 구성 등이 여러 가지 많은 특성. ‣ 내용의 다양성.",
+"단계":"일이 변화해 나가는 각 과정. ‣ 개발 단계.",
+"단정":"어떤 일에 대해 확실하다고 판단하고 결정함. ‣ 성급한 단정.",
+"대강":"1. 자세하지 않고 간단한 줄거리. ‣ 대강의 줄거리. 2. 자세히 하지 않고 간단하게. ‣ 대강 요약하다.",
+"대비":"두 가지의 차이를 알아보기 위해 서로 비교함. 또는 그런 비교. ‣ 색조 대비.",
+"대조":"1. 둘 이상의 것을 맞대어 같고 다름을 살펴봄. ‣ 지문 대조. 2. 서로 달라서 대비가 됨. ‣ 선명한 대조.",
+"대책":"어려운 상황을 이겨낼 수 있는 계획. ‣ 대책 마련.",
+"대칭":"두 사물이 서로 크기나 모양이 정확히 같아 한 쌍을 이룸. ‣ 대칭 구조.",
+"대표":"1. 전체의 상태나 특징을 어느 하나로 잘 나타냄. ‣ 대표 작품. 2. 어떤 조직이나 집단의 권리를 행사하거나 책임을 맡고 있는 사람. ‣ 학부모 대표.",
+"대항":"1. 지지 않으려고 맞서서 버팀. ‣ 대항 세력. 2. 서로 맞서서 승부를 겨룸. ‣ 학교 대항.",
+"도구":"1. 어떤 일을 할 때 쓰이는 기구. 또는 연장.‣ 실험 도구. 2. 어떤 목적을 이루기 위한 수단.‣ 출세의 도구.",
+"도달":"목적한 곳이나 일정한 수준에 다다름.‣ 목적지 도달.",
+"독립":"1. 남에게 의존하거나 매여 있지 않음. ‣ 경제적 독립. 2. 다른 것에 붙어 있거나 속해 있지 않고 독자적으로 존재함. ‣ 독립 시설. 3. 한 나라가 완전한 주권을 가짐. ‣ 독립 국가.",
+"독창":"다른 것을 모방하지 않고 새로운 것을 생각해 내거나 만들어 내는 성질.‣ 예술적 독창성.",
+"동등":"등급이나 정도가 같음. 또는 그런 등급이나 정도. ‣ 동등의 자격.",
+"동력":"1. 수력, 전력, 화력 등 사람이 쓸 수 있게 바꾼 기계적인 에너지. ‣ 동력 장치. 2. 어떤 일을 발전시키고 밀고 나가는 힘. ‣ 변화의 동력.",
+"동의":"1. 같은 의미.‣ 동의 관계. 2. 같은 의견을 가짐.‣ 동의 표시. 3. 다른 사람의 행위를 승인함. ‣ 동의를 받다",
+"등장":"1. 사람이 무대 등에 나타남. ‣ 주인공의 등장. 2. 중요한 일이나 분야에 새로운 사물이나 인물이 나타남. ‣ 등장 배경. 3. 소설, 연극, 영화 등에 어떤 인물이 나타남. ‣ 등장 순서.",
+"모방":"다른 것을 본뜨거나 남의 행동을 흉내 냄.‣ 모방 범죄.",
+"목표":"1. 어떤 목적을 이루기 위하여 도달해야 할 구체적인 대상. ‣ 정확한 목표. 2. 목적으로 삼은 곳. ‣ 목표 단계.",
+"무시":"1. 중요하게 생각하지 않음.‣ 무시를 당하다. 2. 다른 사람을 얕보거나 하찮게 여김.‣ 무시와 수모.",
+"미만":"일정한 수량이나 정도에 이르지 못함. ‣ 18세 미만.",
+"미세":"1. 분간하기 어려울 정도로 아주 작음. ‣ 미세 분말. 2. 몹시 자세하고 꼼꼼함. ‣ 미세 가공.",
+"밀접":"아주 가깝게 마주 닿아 있음. 또는 그런 관계에 있음. ‣ 밀접 지역.",
+"반복":"같은 일을 여러 번 계속함. ‣ 반복 학습.",
+"발견":"아직 찾아내지 못했거나 세상에 알려지지 않은 것을 처음으로 찾아냄. ‣ 놀라운 발견.",
+"발달":"1. 신체, 정서, 지능 등이 성장하거나 성숙함. ‣ 시각 발달. 2. 학문, 기술, 문명, 사회 등의 현상이 보다 높은 수준에 이름. ‣ 과학 기술의 발달. 3. 어떤 것의 세력이나 규모 등이 점차 커짐. ‣ 고기압의 발달.",
+"발명":"지금까지 없던 새로운 기술이나 물건을 처음으로 생각하여 만들어 냄. ‣ 스마트폰의 발명.",
+"발생":"어떤 일이 일어나거나 사물이 생겨남. ‣ 범죄 발생.",
+"발전":"1. 더 좋은 상태나 더 높은 단계로 나아감. ‣ 경제 발전. 2. 일이 어떤 방향으로 전개됨. ‣ 발전 과정.",
+"방대":"규모나 양이 매우 크거나 많다. ‣ 방대한 자료.",
+"방식":"일정한 방법이나 형식. ‣ 해결 방식.",
+"방안":"일을 처리할 방법이나 계획. ‣ 개선 방안.",
+"방지":"어떤 좋지 않은 일이나 현상이 일어나지 않도록 막음. ‣ 병충해 방지.",
+"배경":"1. 뒤쪽의 경치. ‣ 배경이 예쁘다. 2. 사건이나 사람 등과 관계있는 주변 상황. ‣ 사건의 배경. 3. 뒤에서 받쳐 주는 힘이나 조건. ‣ 배경이 든든하다.",
+"배열":"일정한 순서나 간격으로 죽 벌여 놓음. ‣ 자판 배열.",
+"배출":"1. 안에서 밖으로 밀어 내보냄. ‣ 가스 배출. 2. 동물이 섭취한 음식물을 소화하여 항문으로 내보내는 일. ‣ 배출 기관.",
+"범위":"일정하게 한정된 구역. 또는 어떤 힘이 미치는 한계. ‣ 활동 범위.",
+"법칙":"1. 반드시 지켜야 하는 규범. ‣ 법칙을 지키다. 2. 어떤 현상을 설명하기 위한 보편적 원리라고 믿어지는 원칙. ‣ 자연의 법칙.",
+"변경":"다르게 바꾸거나 새롭게 고침. ‣ 계획 변경.",
+"변천":"시간이 지남에 따라 바뀌고 변함. ‣ 시대적 변천.",
+"변화":"무엇의 모양이나 상태, 성질 등이 달라짐. ‣ 온도 변화.",
+"보관":"물건을 맡아 간직하여 둠. ‣ 냉장 보관.",
+"보안":"중요한 정보 등이 빠져나가서 위험이나 문제가 생기지 않도록 안전한 상태로 유지하고 보호함. ‣ 보안 점검.",
+"보완":"모자라거나 부족한 것을 보충하여 완전하게 함. ‣ 단점 보완.",
+"보장":"잘못되는 일이 없도록 보증하거나 보호함. ‣ 안전 보장.",
+"보충":"부족한 것을 보태어 채움. ‣ 물자 보충.",
+"보호":"위험하거나 곤란하지 않게 지키고 보살핌. ‣ 동물 보호.",
+"복사":"1. 원래의 것을 다른 곳에 그대로 옮겨 놓음. ‣ 내용 복사. 2. 문서, 그림, 사진 등을 기계를 이용하여 종이 등에 똑같이 만들어 냄. ‣ 복사 기기.",
+"부정":"그렇지 않다고 판단하여 결정하거나 옳지 않다고 반대함. ‣ 부정을 하다.",
+"분류":"여럿을 종류에 따라서 나눔. ‣ 도서 분류.",
+"분리":"서로 나뉘어 떨어짐. 또는 그렇게 되게 함. ‣ 분리 현상.",
+"비율":"기준이 되는 수나 양에 대한 어떤 값의 비. ‣ 비율이 감소하다.",
+"비판":"무엇에 대해 자세히 따져 옳고 그름을 밝히거나 잘못된 점을 지적함. ‣ 비판을 받다.",
+"사고":"어떤 것에 대하여 깊이 있게 생각함. ‣ 긍정적 사고.",
+"사례":"이전에 실제로 일어난 예. ‣ 모범 사례.",
+"삭제":"없애거나 지움. ‣ 기록 삭제.",
+"상대":"1. 서로 마주 대함. 또는 그런 대상. ‣ 놀이 상대. 2. 서로 승부를 겨룸. 또는 그런 대상. ‣ 상대가 되다. 3. 서로 맞대어 비교함. ‣ 상대 관점.",
+"상상":"실제로 없는 것이나 경험하지 않은 것을 머릿속으로 그려 봄. ‣ 상상의 세계.",
+"상태":"사물이나 현상의 모양이나 형편. ‣ 건강 상태.",
+"상황":"일이 진행되어 가는 형편이나 모양. ‣ 긴급 상황.",
+"생략":"전체에서 일부분을 줄이거나 빼어 짧게 또는 간단하게 만듦. ‣ 이하 생략.",
+"생산":"사람이 생활하는 데 필요한 물건을 만듦. ‣ 상품 생산.",
+"설득":"상대방이 그 말을 따르거나 이해하도록 잘 설명하거나 타이름. ‣ 끈질긴 설득.",
+"성과":"어떤 일을 이루어 낸 결과. ‣ 값진 성과.",
+"성능":"기계 등이 지닌 성질이나 기능. ‣ 성능 개선.",
+"성장":"1. 사람이나 동물 등이 자라서 점점 커짐. ‣ 성장 과정. 2. 사람이 꾸준히 노력을 하거나 경험을 쌓아 발전된 모습으로 자람. ‣ 눈부신 성장. 3. 사물의 규모나 세력 등이 점점 커짐. ‣ 경제 성장.",
+"성질":"1. 사람이 가지고 있는 마음의 본래 바탕. ‣ 성질이 고약하다. 2. 사물이나 현상이 가지고 있는 고유의 특징. ‣ 화학적 성질.",
+"세계적":"1. 규모나 영향 등이 세계 전체에 미치거나 세계에서 가장 뛰어난 것. ‣ 세계적인 가수. 2. 규모나 영향 등이 세계 전체에 미치거나 세계에서 가장 뛰어난. ‣ 세계적 걸작.",
+"세기":"1. 백 년을 단위로 하는 기간. ‣ 지난 세기. 2. 어떤 특성을 띠는 시대. ‣ 예술의 세기. 3. 백 년에 한 번밖에 없을 정도로 드물거나 백 년 동안을 대표할 정도로 뛰어난 것. ‣ 세기의 거장.",
+"소극적":"1. 스스로 하려는 의지가 부족하고 활동적이지 않은 것. ‣ 소극적인 성격. 2. 스스로 하려는 의지가 부족하고 활동적이지 않은. ‣ 소극적 대응.",
+"소비":"돈, 물건, 시간, 노력, 힘 등을 써서 없앰. ‣ 체력 소비.",
+"소용":"어떤 이익이나 쓸모. ‣ 소용 가치.",
+"소유":"자기의 것으로 가지고 있음. 또는 가지고 있는 물건. ‣ 개인 소유.",
+"소재":"1. 어떤 것을 만드는 데 바탕이 되는 재료. ‣ 나일론 소재. 2. 예술 작품을 만드는 데 바탕이 되는 구체적이거나 추상적인 대상. ‣ 드라마 소재. 3. 글의 내용을 이루는 재료. ‣ 소재가 고갈되다.",
+"소통":"1. 막히지 않고 서로 잘 통함. ‣ 차량 소통. 2. 오해가 없도록 뜻이나 생각이 서로 잘 통함. ‣ 의견 소통.",
+"수거":"거두어 감. ‣ 깡통 수거.",
+"수단":"1. 어떤 목적을 이루기 위하여 쓰는 방법이나 도구. ‣ 결제 수단. 2. 어떤 일을 해 나가는 꾀나 솜씨. ‣ 수단이 뛰어나다.",
+"수립":"국가, 정부나 제도, 계획 등을 세움. ‣ 계획 수립.",
+"수용":"어떤 것을 받아들임. ‣ 요구 수용.",
+"수정":"잘못된 것을 바로잡거나 다듬어서 바르게 고침. ‣ 계획의 수정.",
+"수준":"1. 사물의 가치나 질 등을 판단하는 기준이 되는 정도. ‣ 교육 수준. 2. 일반적으로 보통 정도라고 생각되는 기준. ‣ 수준 미달.",
+"수집":"취미나 연구를 위하여 물건이나 자료 등을 찾아서 모음. ‣ 동전 수집.",
+"습득":"학문이나 기술 등을 배워서 자기 것으로 만듦. ‣ 기술 습득.",
+"시도":"어떤 일을 이루기 위하여 계획하거나 행동함. ‣ 벗어나려는 시도.",
+"실시":"어떤 일이나 법, 제도 등을 실제로 행함. ‣ 조사 실시.",
+"실천":"이론이나 계획, 생각한 것을 실제 행동으로 옮김. ‣ 구체적 실천.",
+"실행":"1. 실제로 행함. ‣ 실행 가능. 2. 컴퓨터 프로그램을 작동시키는 일. ‣ 프로그램 실행.",
+"실험":"1. 어떤 일을 하기 전에 이론이나 생각에 따라 실제로 해 봄. ‣ 실험 삼아 해 보다. 2. 과학에서 어떤 이론이 옳은지 알아보기 위해 일정한 조건이나 상황을 만들어서 그 현상을 관찰하고 측정함. ‣ 과학 실험.",
+"심각성":"매우 깊고 중대하며 절박한 성질. ‣ 일의 심각성.",
+"심사":"잘하고 못한 것을 가리기 위해 자세히 살핌. ‣ 논문 심사.",
+"아이디어":"새롭고 기발한 생각. ‣ 참신한 아이디어.",
+"안정":"변하거나 흔들리지 않고 일정한 상태를 유지함. ‣ 물가 안정.",
+"연구":"어떤 사물이나 일에 관련된 사실을 밝히기 위해 그에 대해 자세히 조사하고 분석하는 일. ‣ 실험 연구.",
+"영향":"어떤 것의 효과나 작용이 다른 것에 미치는 것. ‣ 긍정적 영향.",
+"예상":"앞으로 있을 일이나 상황을 짐작함. 또는 그런 내용. ‣ 예상 결과.",
+"예시":"예를 들어 보임. ‣ 사례 예시.",
+"예외":"일반적인 규칙이나 예에서 벗어나는 일. ‣ 예외 규정.",
+"예정":"앞으로 할 일을 미리 정하거나 예상함. ‣ 개봉 예정.",
+"예측":"앞으로의 일을 미리 추측함. ‣ 미래 예측.",
+"오프라인":"1. 컴퓨터나 통신 기기가 네트워크나 인터넷 등에 연결되어 있지 않은 상태. ‣ 오프라인 상태. 2. 인터넷과 같은 가상 공간이 아닌 실제 공간, 또는 사람들이 실제로 경험하는 현실 세계. ‣ 오프라인 대회.",
+"온라인":"인터넷을 통해 다른 컴퓨터와 연결되거나 다른 컴퓨터에 접근이 가능한 상태. ‣ 온라인 게임.",
+"온전성":"잘못된 것이 없이 바르거나 옳은 성질. ‣ 인지 기능의 온전성 여부.",
+"완벽":"흠이나 부족함 없이 완전함. ‣ 완벽을 기대하다.",
+"완성":"완전하게 다 이룸. ‣ 완성 단계.",
+"완전":"부족한 점이 없이 모든 것이 다 갖추어져 있음. ‣ 완전 개방.",
+"외부":"1. 밖이 되는 부분. ‣ 외부 감각. 2. 어떤 조직의 밖. ‣ 외부 기관.",
+"요구":"필요하거나 받아야 할 것을 달라고 청함. ‣ 요구를 받아들이다.",
+"요약":"말이나 글에서 중요한 것을 골라 짧게 만듦. ‣ 내용 요약.",
+"요점":"가장 중요하고 중심이 되는 사항. ‣ 문제의 요점.",
+"요청":"필요한 일을 해 달라고 부탁함. 또는 그런 부탁. ‣ 구조 요청.",
+"용도":"쓰이는 곳이나 목적. ‣ 게시판의 용도.",
+"우수":"여럿 중에서 뛰어남. ‣ 우수 사원.",
+"운영":"1. 조직이나 기구, 사업체 따위를 운용하고 경영함. ‣ 학교 운영. 2. 어떤 대상을 관리하고 운용하여 나감. ‣ 대학의 학사 운영.",
+"원격":"멀리 떨어져 있음. ‣ 원격 조종.",
+"원인":"어떤 일이 일어나게 하거나 어떤 사물의 상태를 바꾸는 근본이 된 일이나 사건. ‣ 사고의 원인.",
+"유래":"사물이나 일이 생겨남. 또는 그 사물이나 일이 생겨난 내력. ‣ 역사적 유래.",
+"유사":"서로 비슷함. ‣ 유사 단체.",
+"유용":"쓸모가 있음. ‣ 유용 가치.",
+"유의":"마음에 두고 조심하며 신경을 씀. ‣ 유의 사항.",
+"유익":"이롭거나 도움이 될 만함. ‣ 개인의 유익.",
+"유지":"어떤 상태나 상황 등을 그대로 이어 나감. ‣ 건강 유지.",
+"유형":"성질이나 특징, 모양 등이 비슷한 것끼리 묶은 하나의 무리. 또는 그 무리에 속하는 것. ‣ 몇 가지 유형.",
+"의견":"어떤 대상이나 현상 등에 대해 나름대로 판단하여 가지는 생각. ‣ 다수의 의견.",
+"의도":"무엇을 하고자 하는 생각이나 계획. ‣ 상대방의 의도.",
+"의사소통":"생각이나 말 등이 서로 통함. ‣ 원활한 의사소통.",
+"의의":"1. 말이나 글의 속에 담긴 깊은 뜻. ‣ 글의 의의. 2. 어떤 사실이나 행위 등이 갖는 중요성이나 가치. ‣ 역사적 의의. 3. 하나의 말이 가리키는 것. ‣ 수학의 의의.",
+"의존":"어떠한 일을 자신의 힘으로 하지 못하고 다른 것의 도움을 받아 의지함. ‣ 약물 의존.",
+"의지":"어떤 일을 이루고자 하는 마음. ‣ 강인한 의지.",
+"이동":"움직여서 옮김. 또는 움직여서 자리를 바꿈. ‣ 거주지 이동.",
+"이하":"1. 수량이나 정도가 일정한 기준을 포함하여 그보다 적거나 모자란 것. ‣ 19세 이하 관람 불가. 2. 순서나 위치가 일정한 기준보다 뒤거나 아래인 것. ‣ 이하 생략.",
+"인정":"어떤 것이 확실하다고 여기거나 받아들임. ‣ 소유권 인정.",
+"자극":"1. 어떠한 작용을 주어 감각이나 마음에 반응을 일으키게 함. 또는 그런 사물. ‣ 어떠한 자극도 없는 무료한 일상. 2. 사람이나 동물의 기관 등에 작용하여 반응을 일으킴. 또는 그런 사물. ‣ 자극은 신경 세포를 통해 뇌로 전달된다.",
+"자동적":"1. 다른 힘을 빌리지 아니하고 저절로 움직이거나 작용하는 것. ‣ 자동적으로 움직이는 기계. 2. 의사와 상관없이 이루어지거나 어떤 절차 없이 바로 이루어지는 것. ‣ 자동적인 미소.",
+"자료":"1. 연구나 조사 따위의 바탕이 되는 재료. ‣ 자료 검색. 2. 만들거나 이루는 데 바탕이 되는 물자나 재료. ‣ 건축용 자료.",
+"자주":"남의 보호나 간섭을 받지 아니하고 자기 일을 스스로 처리함. ‣ 자주 민족의 긍지를 살리다.",
+"작동":"기계 등이 움직여 일함. 또는 기계 등을 움직여 일하게 함. ‣ 기계 작동.",
+"적극성":"어떤 일에 대한 태도에 있어 자발적이고 긍정적인 성질. ‣ 적극성을 보이다.",
+"전달":"1. 사물을 어떤 대상에게 전하여 받게 함. ‣ 전달 방법. 2. 내용이나 뜻을 전하여 알게 함. ‣ 의사 전달. 3. 신호나 자극 등을 다른 곳에 보내거나 전해지도록 함. ‣ 소리 전달.",
+"절차":"일을 해 나갈 때 거쳐야 하는 순서나 방법. ‣ 수속 절차.",
+"접수":"1. 신청이나 신고 등을 말이나 문서로 받음. ‣ 원서 접수. 2. 돈이나 물건 등을 받음. ‣ 부조금 접수.",
+"접촉":"1. 서로 맞닿음. ‣ 신체 접촉. 2. 가까이 대하거나 만남. ‣ 이웃과의 접촉.",
+"정교성":"솜씨나 기술, 내용이나 구성 따위가 정밀하고 뛰어난 성질. ‣ 이 제품은 성능과 정교성이 뛰어나다.",
+"정당성":"이치에 맞아 올바른 성질. ‣ 정책의 정당성.",
+"정보":"1. 어떤 사실이나 현상을 관찰하거나 측정하여 모은 자료를 정리한 지식. ‣ 관광 정보. 2. 컴퓨터 등과 같은 전자 기술을 통해 얻는 지식. ‣ 정보 네트워크.",
+"정상":"1. 산 등의 맨 꼭대기. ‣ 산 정상. 2. 그 이상 더없는 최고의 상태. ‣ 인기 정상. 3. 한 나라의 가장 중요한 자리의 인물. ‣ 한 나라의 정상.",
+"정지":"1. 움직이고 있던 것이 멈춤. 또는 멈추게 함. ‣ 차량 정지. 2. 하고 있던 일을 그만둠. ‣ 영업 정지.",
+"제도":"관습, 도덕, 법률 등의 규범이나 사회 구조의 체계. ‣ 가족 제도.",
+"제안":"의견이나 안건으로 내놓음. ‣ 시민의 제안.",
+"조건":"1. 어떤 일을 이루게 하기 위하여 미리 갖추어야 할 상태나 요소. ‣ 성공 조건. 2. 어떤 일을 하기에 앞서 내놓는 요구나 견해. ‣ 조건을 걸다.",
+"조사":"어떤 일이나 사물의 내용을 알기 위하여 자세히 살펴보거나 찾아봄. ‣ 사고 경위 조사.",
+"종료":"어떤 행동이나 일이 끝남. 또는 행동이나 일을 끝마침. ‣ 사건 종료.",
+"주의":"1. 마음에 새겨두고 조심함. ‣ 주의를 당부하다. 2. 어떤 한 곳이나 일에 관심을 집중함. ‣ 주의가 산만하다. 3. 경고나 충고의 뜻으로 알림. ‣ 심판에게 주의를 받았다.",
+"주장":"자기의 의견이나 주의를 굳게 내세움. 그런 의견이나 주의. ‣ 말도 안 되는 주장을 한다.",
+"주제":"1. 대화나 연구 등에서 중심이 되는 문제. ‣ 대화의 주제. 2. 작품에서 지은이가 표현하고자 하는 주된 생각. ‣ 자연의 아름다움을 주제로 한 그림.",
+"준수":"명령이나 규칙, 법률 등을 지킴. ‣ 국민은 헌법을 준수해야 할 의무를 지닌다.",
+"중립":"어느 편에도 치우치지 아니하고 공정하게 처신함. ‣ 공무원은 항상 정치적 중립을 지켜야 한다.",
+"중복":"되풀이하거나 겹침. ‣ 발표자는 아까 했던 말을 중복하고 있다.",
+"중시":"매우 크고 중요하게 여김. ‣ 선생님께서는 지적보다는 칭찬을 중시한다.",
+"증거":"어떤 사건이나 사실을 확인할 수 있는 근거. ‣ 그는 증거 부족으로 석방되었다.",
+"증명":"어떤 사건이나 내용이나 판단이 진실인지 아닌지를 증거를 들어서 밝힘. ‣ 친구의 무죄를 증명하기 위해 법정에 섰다.",
+"지속":"어떤 일이나 상태가 오래 계속됨. 또는 어떤 일이나 상태를 오래 계속함. ‣ 물가 상승의 지속.",
+"지시":"1. 어떤 것을 가리켜서 보게 함. ‣ 방향 지시등. 2. 무엇을 하라고 시킴. 또는 그 내용. ‣ 약은 약사의 지시에 따라 복용해야 한다.",
+"지식":"어떤 대상에 대하여 배우거나 실천을 통하여 알게 된 명확한 인식이나 이해. ‣ 그의 사고와 지식에는 한계가 없었다.",
+"지원":"물질이나 행동으로 도움. ‣ 이재민 지원 대책을 마련해야 한다.",
+"지적":"1. 어떤 것을 콕 집어서 분명하게 가리킴. ‣ 선생님의 지적을 받은 학생. 2. 잘못된 점이나 고쳐야 할 점을 가리켜 말함. ‣ 이번 조치는 불필요했다는 지적이 일고 있다.",
+"지점":"어떤 지역 안의 특정한 곳. ‣ 휴전선 남부 11킬로 지점에 위치하고 있다.",
+"지정":"1. 가리키어 분명하게 정함. ‣ 지정된 자리에 앉아 주시기 바랍니다. 2. 공공 기관이나 단체, 개인 등이 어떤 것을 특별한 자격이나 가치가 있는 것으로 정함. ‣ 문화재 지정.",
+"지지":"1. 어떤 사람이나 단체 등이 내세우는 주의나 의견 등에 찬성하고 따름. ‣ 지지를 호소한다. 2. 어떤 것을 붙들어서 버티게 함. ‣ 무너진 벽을 버팀목으로 지지하였다.",
+"지표":"방향이나 목적, 기준 등을 나타내는 표지. ‣ 교육의 지표.",
+"진출":"1. 어떤 방면으로 활동 범위나 세력을 넓혀 나아감. ‣ 해외 시장 진출을 위해 모두가 노력 중이다. 2. 어떤 곳을 향해 앞으로 나아감. ‣ 의병들은 적의 진출을 기다렸다.",
+"집중":"1. 한 곳을 중심으로 하여 모임, 또는 그렇게 모음. ‣ 적군에게 집중 공격을 가하다. 2. 한 가지 일에 모든 힘을 쏟아부음. ‣ 정신 집중.",
+"차단":"1. 액체나 기체 등의 흐름을 막거나 끊어서 통하지 못하게 함. ‣ 유해 전자파 차단. 2. 다른 것과의 관계나 접촉을 막거나 끊음. ‣ 외부와의 접촉을 차단하다.",
+"참가":"모임이나 단체, 경기, 행사 등의 자리에 가서 함께함. ‣ 우리 팀은 참가에 의의를 두었다.",
+"참여":"여러 사람이 같이 하는 어떤 일에 끼어들어 함께 일함. ‣ 사람들의 참여가 너무 적었다.",
+"창의":"지금까지 없던 새로운 것을 생각해 냄. 또는 그런 생각. ‣ 창의를 억누르는 고압적인 분위기.",
+"창조":"1. 전에 없던 것을 처음으로 만들거나 이룩함. ‣ 그는 새로운 유행 창조에 몰두하였다. 2. 신이 우주 만물을 처음으로 만듦. ‣ 생명 창조의 신비함.",
+"처리":"1. 일이나 사무, 사건을 절차에 따라 정리해 마무리함. ‣ 사고 처리 비용. 2. 어떤 결과를 얻기 위해 화학적, 물리적 작용을 일으킴. ‣ 폐수 처리 시설을 설치하다.",
+"체험":"몸으로 직접 겪음. 또는 그런 경험. ‣ 체험을 살려 글을 쓰다.",
+"초과":"일정한 기준을 넘음. ‣ 목표 초과 달성.",
+"총합":"모두를 합함. ‣ 전체는 부분들의 총합이다.",
+"추리":"알고 있는 것을 바탕으로 알지 못하는 것을 미루어 생각함. ‣ 내 추리는 완전히 빗나가고 말았다.",
+"추측":"어떤 사실이나 보이는 것을 통해서 다른 무엇을 미루어 짐작함. ‣ 추측 보도 자제 요청.",
+"출처":"1. 말이나 사물이 생기거나 나온 곳. ‣ 소문의 출처를 알 수 없었다. 2. 사람이 다니거나 가는 곳. ‣ 예정된 출처와 다른 장소로 이동했다.",
+"충돌":"서로 세게 맞부딪치거나 맞섬. ‣ 시위대와 경찰의 격렬한 충돌로 많은 사람이 다쳤다.",
+"충족":"1. 일정한 기준이나 분량을 채워 모자람이 없게 함. ‣ 국민 생활의 기본적 수요를 충족하다. 2. 넉넉하여 모자람이 없음. ‣ 호기심 충족.",
+"측정":"1. 일정한 양을 기준으로 하여 같은 종류의 다른 양의 크기를 잼. ‣ 한강의 오염도를 측정하다. 2. 헤아려 결정함. ‣ 용기는 타인들의 눈으로 평가되거나 측정될 수 없다.",
+"타당성":"사물의 이치에 맞아 올바른 성질. ‣ 주장과 근거의 타당성이 부족하다.",
+"타협":"어떤 일을 양보하여 의논함. ‣ 남북 갈등은 대화와 타협으로 해결해야 한다.",
+"탁월하다":"남보다 훨씬 뛰어나다. ‣ 이 수박은 당도와 육질이 탁월하다.",
+"탐구":"학문 등을 깊이 파고들어 연구함. ‣ 언어에 대한 철학적 탐구.",
+"탐색":"알려지지 않은 사물이나 현상을 찾아내거나 밝히기 위해 살피어 찾음. ‣ 학생들의 진로 탐색에 도움이 되는 책이다.",
+"토대":"1. 건물을 지탱하는, 건물의 제일 밑부분. ‣ 건물을 지을 때 토대를 탄탄히 해야 한다. 2. 어떤 일이나 사물의 바탕이 되는 기초. ‣ 발전의 토대를 마련하다.",
+"통과":"1. 어떤 곳이나 때를 거쳐서 지나감. ‣ 기차가 이곳을 통과한다. 2. 검사, 시험, 심의 등에서 인정되거나 합격함. ‣ 우리 팀의 예선 통과는 아무런 문제가 없다. 3. 신청서나 안건 등이 심사를 거쳐 승인됨. ‣ 새로운 법안이 통과되어 내년부터 적용된다.",
+"통일":"1. 나누어지거나 갈라진 것들을 합쳐서 하나가 되게 함. ‣ 신라의 삼국 통일. 2. 서로 다른 것들을 같게 함. ‣ 단체복으로 복장을 통일하였다. 3. 여러 가지 생각을 버리고 정신이나 마음을 집중함. ‣ 정신의 통일.",
+"통제":"1. 어떤 방침이나 목적에 따라 행위를 하지 못하게 막음. ‣ 출입 통제. 2. 권력이나 힘으로 언론이나 경제 활동 등을 하지 못하게 막음. ‣ 언론 통제.",
+"특색":"보통의 것과 차이가 나게 다른 점. ‣ 그 지역의 특색을 살린 제품을 만들다.",
+"특성":"일정한 사물에만 있는 보통과 매우 차이가 나게 다른 성질. ‣ 과일도 품종에 따라 서로 다른 특성이 있다.",
+"특징":"다른 것에 비해 특별히 달라 눈에 띄는 점. ‣ 존댓말의 발달은 우리말의 특징이다.",
+"파괴":"1. 때려 부수거나 깨뜨려 무너뜨림. ‣ 발전소 파괴로 전력 공급이 중단되었다. 2. 조직, 질서, 관계 등을 깨뜨려 무너뜨림. ‣ 생태계의 파괴.",
+"파악":"어떤 일이나 대상의 내용, 상황을 확실하게 이해하여 앎. ‣ 출발 전 인원 파악을 꼭 해야 한다.",
+"판단":"논리나 기준에 따라 어떠한 것에 대한 생각을 정함. ‣ 사람은 자신의 주관적 판단에 따라 자기의 일을 결정한다.",
+"판명":"어떤 사실을 판단하여 분명하게 밝힘. ‣ 이 제품은 안전하다고 판명이 났다.",
+"판별":"옳고 그름이나 좋고 나쁨을 판단하여 구별함. ‣ 정확한 판별이 불가능하다.",
+"판정":"옳고 그름이나 좋고 나쁨을 구별하여 결정함. ‣ 나는 신체검사에서 불합격 판정을 받았다.",
+"편의":"형편이나 조건 등이 편하고 좋음. ‣ 주민의 편의를 위해 체육관 시설을 개방했다.",
+"평가":"1. 물건값을 헤아려 매김. 또는 그 값. ‣ 이 집은 1억 원으로 평가가 되었다. 2. 사물의 가치나 수준을 평함. 또는 그 가치나 수준. ‣ 이 그림은 미술 전문가들에게 좋은 평가를 받았다.",
+"평이하다":"까다롭거나 어렵지 않고 쉽다. ‣ 역사책 내용이 평이하여 쉽게 읽고 이해할 수 있다.",
+"폐기":"1. 못 쓰게 된 것을 버림. ‣ 폐기 처분. 2. 조약, 법령, 계약, 약속 등의 효과를 없어지게 함. ‣ 계약의 폐기.",
+"폐지":"실시해 오던 제도나 법규, 일 등을 그만두거나 없앰. ‣ 경제 활성화를 위해 각종 세금의 폐지를 검토 중이다.",
+"포기":"1. 하려던 일이나 생각을 중간에 그만둠. ‣ 시작했으니 끝까지 포기하지 않겠다. 2. 자기의 권리나 자격, 소유한 물건 등을 버림. ‣ 상속권을 포기하였다.",
+"포함":"어떤 무리나 범위에 함께 들어 있거나 함께 넣음. ‣ 우리 집 식구는 잠시 해외에 나가 있는 형까지 포함하면 모두 네 식구이다.",
+"표본":"1. 본보기로 삼을 만한 것. ‣ 그의 선행은 많은 사람에게 표본이 되었다. 2. 생물의 몸 전체나 일부에 적당한 처리를 하여 보존할 수 있게 한 것. ‣ 진달래꽃 표본. 3. 그 집단 전체의 성질을 짐작할 수 있는 통계 자료. ‣ 우리 반 성적이 표본으로 활용되었다.",
+"표시":"의견이나 감정 등을 겉으로 드러내 보임. ‣ 그의 무례한 언행에 불쾌한 표시를 냈다.",
+"표준":"1. 사물의 성격이나 정도 등을 알기 위한 근거나 기준. ‣ 표준 시간. 2. 일반적이거나 평균적인 것. ‣ 그의 키는 한국 남자 키의 표준을 넘었다.",
+"표현":"느낌이나 생각 등을 말, 글, 몸짓 등으로 나타내어 겉으로 드러냄. ‣ 표현 방법이 서투르다.",
+"필수":"꼭 있어야 하거나 하여야 함. ‣ 외교관이 되기 위해 외국어 학습은 필수이다.",
+"학습":"배워서 익힘. ‣ 우리 반 학생들은 모두 학습 태도가 바르고 성적도 우수하다.",
+"합동":"1. 둘 이상의 집단이나 개인이 모여 일을 함께 함. ‣ 정기적으로 육군과 해군은 합동 훈련을 실시했다. 2. 두 개의 도형이 크기와 모양이 똑같은 것. ‣ 삼각형의 합동 조건 알아?",
+"해결":"사건이나 문제, 일 등을 잘 처리해 끝을 냄. ‣ 두 나라 사이에는 해결이 어려운 외교 문제가 걸려 있었다.",
+"해답":"질문이나 문제를 풀이함. 또는 그런 것. ‣ 그가 제시한 올바른 영어 교육 방법의 해답은 ‘책 읽기’였다.",
+"해당":"1. 무엇과 관계가 있는 바로 그것. ‣ 지수는 해당 기관에 찾아가 서류를 발급받았다. 2. 어떤 범위나 조건 등에 바로 들어맞음. ‣ 해당 사항에 표시하시면 된다.",
+"해법":"1. 어렵거나 곤란한 일을 푸는 방법. ‣ 승규는 우리가 고민하던 문제에 대해 간단한 해법을 제시하였다. 2. 수학 문제를 푸는 방법. ‣ 문제 5번은 적절한 해법을 찾아 수식을 풀어야 해.",
+"해석":"1. 문장으로 표현된 내용을 이해하고 설명함. 또는 그 내용. ‣ 나 이 문장 해석 좀 해 줄래? 2. 사물이나 행위 등의 내용을 판단하고 이해하는 일. 또는 그 내용. ‣ 아직은 섣불리 해석을 내리지 않는 게 좋겠습니다.",
+"해설":"어려운 문제나 사건의 내용 등을 알기 쉽게 풀어 설명함. 또는 그런 글이나 책. ‣ 이 책에는 그림과 함께 간단한 해설이 적혀 있다.",
+"핵심":"가장 중심이 되거나 중요한 부분. ‣ 최근 대중문화 산업이 우리 경제를 이끌 핵심 산업으로 떠오르고 있다.",
+"행위":"사람이 의지를 가지고 하는 짓. ‣ 애초에 열 명의 군사로 적을 상대한다는 것은 무모한 행위였다.",
+"향상":"실력, 수준, 기술 등이 더 나아짐. 또는 나아지게 함. ‣ 품질 향상에 힘쓴 결과 매출이 증가했다.",
+"허가":"1. 행동이나 일을 할 수 있게 허락함. ‣ 주인의 허가 없이는 들어갈 수 없다고 쓰여 있다. 2. 법에 의해 금지되어 있는 행위를 특정한 경우에 한해 허용하여 이를 행할 수 있게 함. ‣ 다행히 영업 허가가 나서 충남이는 상점을 열 수 있었다.",
+"현실":"현재 실제로 있는 사실이나 상태. ‣ 현실을 똑바로 봐.",
+"현장":"1. 사물이 현재 있는 곳. ‣ 우리는 금괴가 묻혀 있는 현장으로 찾아갔다. 2. 일이 벌어졌거나 벌어지고 있는 곳. ‣ 경찰들은 이미 사건 현장에 도착해 있었다. 3. 일을 실제로 진행하거나 작업하는 곳. ‣ 사람들은 현장 경험이 많은 그를 잘 따랐다.",
+"협동":"어떤 일을 하기 위해 서로 마음과 힘을 하나로 합함. ‣ 우리 반 아이들은 함께 그 과제를 하며 협동 정신을 길렀다.",
+"협력":"힘을 합해 서로 도움. ‣ 각 회사의 대표들은 한자리에 모여 회사 간의 협력 방안을 의논했다.",
+"협의":"여러 사람이 모여 서로 의논함. ‣ 현재 피해 보상과 관련된 협의가 진행 중이다.",
+"협조":"힘을 합쳐 서로 조화를 이룸. ‣ 당신의 적극적인 협조가 필요하다.",
+"형태":"1. 사물의 생긴 모양. ‣ 거북이와 자라는 형태가 비슷해서 구별하기 어렵다. 2. 어떠한 구조나 전체를 이루고 있는 사물이 일정하게 갖추고 있는 모양. ‣ 전기는 사람들이 쉽게 이용할 수 있는 에너지의 한 형태이다.",
+"혼동":"1. 서로 다른 것을 구별하지 못하고 뒤섞어서 생각함. ‣ 운전자들의 혼동을 막기 위해 도로에 표지판을 설치했다. 2. 서로 뒤섞여 하나가 됨. ‣ 사람들은 다양한 형태의 작품을 보면서 예술이라는 개념에 대해 혼동이 일어났다.",
+"혼란":"뒤죽박죽이 되어 어지럽고 질서가 없음. ‣ 갑자기 유학을 가겠다고 말하는 딸의 모습을 보고 부모님은 혼란에 빠졌다.",
+"혼잡":"여러 가지가 한데 뒤섞여 어지럽고 복잡함. ‣ 명절을 맞아 고향에 내려가는 사람들로 기차역은 혼잡을 이루었다.",
+"확고하다":"태도나 상황 등이 확실하고 굳세다. ‣ 아주 어렸을 때부터 연기를 하고 싶다는 의지가 확고했다.",
+"확실성":"틀림없이 그러한 성질. ‣ 작가가 되고자 하는 내 꿈이 이루어질지 확실성이 없다.",
+"확인":"틀림없이 그러한지를 알아보거나 인정함. ‣ 사람들은 사실 여부에 대한 확인도 없이 나에 대한 나쁜 소문을 퍼뜨렸다.",
+"활동":"1. 몸을 움직여 행동함. ‣ 병의 완쾌를 위해서는 당분간 활동을 자제해야 한다. 2. 어떤 일에서 좋은 결과를 거두기 위해 힘씀. ‣ 성악가의 활동 무대가 넓다.",
+"활약":"활발히 활동함. ‣ 김 감독은 해외 유명 문화제에서 수상하는 등 뛰어난 활약을 보이고 있다.",
+"활용":"어떤 대상이 가지고 있는 쓰임이나 능력을 충분히 잘 이용함. ‣ 작업 속도를 높이려면 컴퓨터의 활용을 극대화해야 한다.",
+"효과":"1. 어떠한 것을 하여 얻어지는 좋은 결과. ‣ 다이어트를 해도 효과가 없는지 살이 하나도 빠지지 않았다. 2. 영화나 연극 등에서 소리나 빛, 그래픽 등을 이용하여 분위기를 만드는 일. ‣ 실제로 배우가 연기한 것이 아니라 그래픽 효과일 거야.",
+"흡수":"1. 안이나 속으로 빨아들임. ‣ 자동차에 충격 흡수 장치를 설치했다. 2. 외부에 있는 사람이나 사물 등을 내부로 모여들게 함. ‣ 우수 인재 흡수를 위한 방안이다.",
+"희귀하다":"드물어서 특이하거나 매우 귀함. ‣ 그 음반은 희귀해서 구하기가 매우 힘들다.",
+"희박하다":"1. 기체나 액체의 밀도나 농도가 짙지 못하고 낮거나 엷다. ‣ 공기가 희박해서 숨쉬기 어렵다. 2. 감정이나 정신 상태 따위가 부족하거나 약하다. ‣ 도덕 관념이 희박해서 그래. 3. 어떤 일이 이루어질 가능성이 적다. ‣ 프로젝트가 성공할 가능성은 매우 희박하다."
+};
+
+    const bookData = [{"id": "book01", "title": "다름: 다르지만 같은 우리", "author": "박규빈", "ondok_score": 170, "level": "3-02 ~ 3-06", "description": "세계 각국의 문화 차이를 사례로 들어 다름의 가치를 탐구하고, 서로를 이해하고 존중하는 태도의 중요성을 전합니다.", "key_vocab": ["의미", "행동", "이용", "문제", "중요", "상대", "표시", "도구", "처리", "전달", "행위"]}, {"id": "book02", "title": "부리 동물 출입 금지", "author": "소피 레스코", "ondok_score": 170, "level": "3-02 ~ 3-06", "description": "해변에서 부리 동물이라는 이유로 차별받는 가족의 여정을 통해 포용과 다양성의 중요성을 전달합니다.", "key_vocab": ["안내", "목적", "반대", "직접", "통과", "가능", "조건"]}, {"id": "book03", "title": "어서 와, 도서관은 처음이지?", "author": "이주희", "ondok_score": 170, "level": "3-07 ~ 3-09", "description": "주인공이 도서관을 낯설어하다가 점차 그 매력에 빠져드는 과정을 통해 독서의 즐거움을 알려줍니다.", "key_vocab": ["이용", "방법", "직접", "프로그램", "정리", "부분", "안내", "소개", "자료", "검색", "기호", "발견", "확인", "다양", "요청", "참고"]}, {"id": "book04", "title": "63일", "author": "허정윤", "ondok_score": 180, "level": "3-08 ~ 3-10", "description": "공장에서 63일 동안 완성되는 작은 털 인형의 제작 과정을 통해 인간의 욕망과 상업적 압박을 이야기합니다.", "key_vocab": ["방법", "종류", "선택", "가능", "완성", "다양", "연구", "발견"]}, {"id": "book05", "title": "꽝 없는 뽑기 기계", "author": "곽유진", "ondok_score": 180, "level": "3-08 ~ 3-10", "description": "문구점 뽑기 기계를 둘러싼 어린이들의 소소한 경쟁과 이야기를 통해 일상 속 작은 즐거움과 상실의 의미를 배웁니다.", "key_vocab": ["주변", "사실", "방향", "지도", "지표", "발견", "도구", "보관", "확인", "수거", "상황"]}, {"id": "book06", "title": "하얀 밤의 고양이", "author": "주애령", "ondok_score": 190, "level": "3-09 ~ 4-02", "description": "가족의 경제적 어려움 속에서 자아를 찾아가는 소녀의 이야기를 통해 성장과 희망의 메시지를 전합니다.", "key_vocab": ["준비", "정리", "주변", "정확", "직접", "프로그램", "편의", "주의", "통과", "대강", "확인"]}, {"id": "book07", "title": "아홉 살 마음 사전", "author": "박성우", "ondok_score": 190, "level": "3-10 ~ 4-03", "description": "80가지 감정을 구체적인 사례와 함께 설명하여 어린이들이 감정을 표현하고 소통하는 능력을 키우도록 돕습니다.", "key_vocab": ["문제", "행동", "이해", "사실", "정확", "소개", "검사", "의미", "준비", "이상", "표현", "상황", "활용", "대표", "완성", "현장", "학습"]}, {"id": "book08", "title": "엄마 도감", "author": "권정민", "ondok_score": 190, "level": "3-10 ~ 4-03", "description": "아이의 시선으로 바라본 엄마의 다양한 모습과 역할을 유머와 따뜻함으로 풀어내 가족 간의 유대를 강조합니다.", "key_vocab": ["중요", "부분", "문제", "결정", "활동", "연구", "상태", "심각", "상상", "기능", "변화", "집중", "완전", "성장", "발달"]}, {"id": "book09", "title": "우리는 우주 어디쯤 있을까?", "author": "제이슨 친", "ondok_score": 190, "level": "3-10 ~ 4-04", "description": "작은 소립자부터 거대한 우주까지 모든 존재가 연결되어 있음을 이야기하며 자신과 우주의 경이로운 연관성을 발견하게 합니다.", "key_vocab": ["비교", "부분", "복잡", "이상", "종류", "재료", "처리", "유지", "정보", "기본"]}, {"id": "book10", "title": "단어의 여왕", "author": "산소영", "ondok_score": 200, "level": "4-01 ~ 4-04", "description": "주인공이 단어와 그림을 통해 자신의 내면 세계를 탐구하며 성장하는 이야기를 다룹니다.", "key_vocab": ["문제", "준비", "경험", "안내", "복잡", "연결", "이해", "이상", "정리", "중요", "설명", "반대", "직접", "방법", "사실", "상상", "편의", "이동", "보관", "심각", "요구", "포기", "발견", "기호", "소용", "통과", "수정", "가능"]}, {"id": "book11", "title": "아드님, 진지 드세요", "author": "강민경", "ondok_score": 200, "level": "4-01 ~ 4-04", "description": "아침마다 이어지는 주인공과 가족 간의 갈등과 화해를 통해 가족 간의 이해와 공감의 중요성을 강조합니다.", "key_vocab": ["정리", "행동", "방법", "사실", "준비", "주변", "중요", "부분", "재료", "완전", "도구", "확인", "주의", "보호", "상대", "예상", "기술", "조건"]}, {"id": "book12", "title": "옥춘당", "author": "고정순", "ondok_score": 200, "level": "4-03 ~ 4-07", "description": "전쟁과 재개발 속에서도 이웃을 품었던 할아버지와 할머니의 삶을 그린 이야기입니다.", "key_vocab": ["주변", "문제", "준비", "사실", "주제", "변화", "설득", "완전", "과정"]}, {"id": "book13", "title": "화가 호로록 풀리는 책", "author": "신혜영", "ondok_score": 200, "level": "4-04 ~ 4-08", "description": "화를 다루는 다양한 방법을 제시하며 감정을 이해하고 건강하게 표출하는 법을 제안합니다.", "key_vocab": ["방법", "행동", "중요", "문제", "반대", "부분", "소개", "프로그램", "다양", "조건", "발달", "상황", "상상", "무시", "부정", "실행", "발명", "효과", "변화", "활동"]}, {"id": "book14", "title": "아기곰이 보내는 편지", "author": "문종훈", "ondok_score": 210, "level": "4-05 ~ 4-09", "description": "환경 파괴로 어려움을 겪는 동물들의 이야기를 통해 환경 보호의 중요성을 호소합니다.", "key_vocab": ["주변", "이상", "중요", "직접", "능력", "방법", "행동", "파괴", "발견", "소용", "인정", "변화", "반복", "안정"]}, {"id": "book15", "title": "태극기 다는 날", "author": "김용란", "ondok_score": 210, "level": "4-05 ~ 4-09", "description": "태극기의 역사와 의미를 알기 쉽게 풀어내어 국가 상징의 중요성을 일깨웁니다.", "key_vocab": ["중심", "내용", "중요", "규칙", "발전", "보관", "독립", "지원", "표시", "표현", "지시", "지정", "활약", "의지", "활동", "비율", "완성"]}, {"id": "book16", "title": "오리 부리 이야기", "author": "황선애", "ondok_score": 210, "level": "4-06 ~ 4-10", "description": "이야기를 전하던 오리의 모험을 통해 언어와 소통의 중요성을 유머와 상상력으로 일깨웁니다.", "key_vocab": ["사실", "문제", "지도", "준비", "주변", "정확", "이해", "이상", "반대", "발견", "확실", "상상", "심각", "대표", "구분", "운영", "소용", "도구", "완전", "상태", "수준", "완성"]}, {"id": "book17", "title": "거꾸로 가족", "author": "신은영", "ondok_score": 220, "level": "4-06 ~ 5-01", "description": "전통적인 가족 역할을 뒤집어 새로운 시각에서 가족의 소중함과 협력의 가치를 조명합니다.", "key_vocab": ["반대", "결정", "준비", "문제", "직접", "정확", "방향", "결과", "이상", "행동", "주변", "의견", "예상", "발견", "집중", "제안", "상대", "조건", "구분", "결론", "다양", "분리", "수거", "고정", "증거"]}, {"id": "book18", "title": "담을 넘은 아이", "author": "김정민", "ondok_score": 220, "level": "4-07 ~ 5-01", "description": "가난과 불평등 속에서도 희망을 잃지 않고 자신의 길을 찾아가는 주인공의 성장 과정을 섬세하게 묘사합니다.", "key_vocab": ["사실", "내용", "방법", "설명", "행동", "비교", "이해", "지도", "이상", "중요", "온전", "소용", "주제", "안정", "반복", "예상", "방안", "요구", "생산", "영향", "인정", "확인", "지지", "발전", "보관", "확실"]}, {"id": "book19", "title": "긴긴밤", "author": "루리", "ondok_score": 230, "level": "4-08 ~ 5-05", "description": "고아 코뿔소 노든이 코끼리들과 유대를 형성하며 가족의 의미와 자연과 인간의 관계를 탐구하는 이야기입니다.", "key_vocab": ["사실", "주변", "방법", "이상", "설명", "계획", "문제", "선택", "방향", "이해", "부분", "직접", "의미", "규칙", "소개", "안내", "중심", "행동", "결정", "성격", "목적", "경험", "중요", "정확", "상상", "발견", "반복", "확인", "포기", "구분", "목표", "시도", "확실", "상대", "완전", "관찰", "성질", "상태", "강조", "완벽", "가능", "보호", "고려", "주의", "해결", "집중", "현실", "무시", "실행", "관리", "안정"]}, {"id": "book20", "title": "우리는 물이야", "author": "이정모", "ondok_score": 230, "level": "4-08 ~ 5-05", "description": "물 분자를 주인공으로 생명과 자연의 관계를 유쾌하게 탐구하며 물의 과학적 특징과 생명의 본질을 깨닫게 합니다.", "key_vocab": ["부분", "중요", "이해", "정확", "소개", "단순", "사실", "실험", "상태", "성질", "유지", "다양", "기술", "연구", "배열", "안정", "변화", "통과", "활동", "흡수", "발견", "도구", "기준", "확인", "특징", "인정"]}, {"id": "book21", "title": "우리가 학교를 바꿨어요!", "author": "배성호", "ondok_score": 230, "level": "4-10 ~ 5-05", "description": "학생들이 직접 참여해 학교 환경을 개선한 경험을 통해 공동체 활동의 중요성과 협력의 가치를 강조합니다.", "key_vocab": ["이용", "안내", "직접", "결정", "연결", "반대", "중요", "사실", "부분", "지도", "선택", "내용", "결과", "방법", "준비", "소개", "정리", "이해", "주변", "경험", "행동", "이상", "문제", "재료", "의견", "관찰", "제안", "평가", "자료", "현실", "보관", "가능", "다양", "활동", "발견", "관련", "과정", "활용", "아이디어", "포기", "현장", "외부", "복사", "확인", "혼란", "변화", "집중", "상상", "주의", "발전", "대표", "동의", "표현", "시도", "관리", "검색", "도구", "자극", "학습"]}, {"id": "book22", "title": "미움을 파는 고슴도치", "author": "슬라비 스토예프", "ondok_score": 240, "level": "5-02 ~ 5-06", "description": "숲속 고슴도치 상인의 미움 판매 이야기를 통해 갈등보다는 이해와 협력을 선택해야 함을 일깨웁니다.", "key_vocab": ["중요", "방법", "이용", "행동", "설명", "준비", "정확", "직접", "선택", "문제", "의미", "사실", "교환", "목적", "부분", "정리", "정보", "대표", "상황", "유용", "조건", "발견", "해결", "제안", "설득", "효과", "아이디어", "확인", "확실", "수집", "표시", "원인", "현장", "동의"]}, {"id": "book23", "title": "야외 수영장", "author": "빌 그멜링", "ondok_score": 240, "level": "5-03 ~ 5-07", "description": "경제적 어려움 속에서도 가족과 친구들이 함께 여름을 보내며 어려운 상황에서도 희망과 용기를 배우는 이야기입니다.", "key_vocab": ["사실", "이용", "계획", "부분", "설명", "행동", "방법", "문제", "이상", "정확", "이해", "직접", "정리", "준비", "주변", "중요", "방향", "소개", "복잡", "반대", "결정", "취소", "지도", "경험", "안내", "완전", "상상", "상황", "관리", "완벽", "예상", "가능", "의지", "시도", "아이디어", "표현", "발견", "정상", "분리", "포기", "대조", "상태", "확실", "확인", "결론", "강력", "현실", "현장", "공동", "집중", "인정", "검색", "설득", "발명", "해결", "보관", "수준", "주제", "관찰", "보호", "반복", "제안", "동의", "유지", "발달", "증명", "포함", "참가"]}, {"id": "book24", "title": "열두 살 장래 희망", "author": "박성우", "ondok_score": 250, "level": "5-03 ~ 5-07", "description": "기계를 고치며 성장하는 상상 속 이야기를 통해 자신만의 흥미를 발견하고 꿈을 키우는 중요성을 강조합니다.", "key_vocab": ["문제", "재료", "중요", "준비", "종류", "행동", "직접", "사실", "방법", "주변", "계획", "복잡", "이용", "정확", "정리", "부분", "안내", "의미", "상대", "해결", "상상", "표현", "온전", "파악", "특성", "활용", "작동", "완벽", "지식", "확인", "관찰", "보호", "분류", "무시", "분리", "수거", "가능", "측정", "도구", "집중", "확실", "인정", "검색", "보관", "기본", "기초", "다양", "연구", "방식", "상황", "조건", "유용"]}, {"id": "book25", "title": "빛나는 그림자가", "author": "황선미", "ondok_score": 250, "level": "5-04 ~ 5-08", "description": "사진과 모델링을 좋아하는 주인공이 친구들과의 일상을 기록하며 정체성을 찾아가는 창의적 여정을 보여줍니다.", "key_vocab": ["문제", "사실", "내용", "설명", "선택", "중요", "부분", "주변", "이상", "정리", "준비", "성격", "결정", "소개", "직접", "행동", "정확", "교환", "반대", "재료", "방법", "이해", "상상", "확인", "확실", "상태", "완성", "소용", "무시", "완전", "발견", "포기", "보관", "독립", "탐구", "증거", "자료", "검색", "해결", "심각", "예상", "필수", "조건", "운영", "대강", "표시", "지점", "삭제", "시도", "가능", "방식", "거부", "결론", "혼란", "완벽", "균형", "접수", "아이디어", "적극", "기능", "주의", "강조", "표현", "성질", "조사", "수준", "현실", "집중"]}, {"id": "book26", "title": "바다의 생물, 플라스틱", "author": "아나 페구, 이자베우 밍뇨스 마르칭스", "ondok_score": 250, "level": "5-04 ~ 5-08", "description": "플라스틱 쓰레기가 바다 생태계에 미치는 영향을 탐구하며 환경 보호의 필요성을 느끼게 하는 책입니다.", "key_vocab": ["문제", "부분", "중요", "종류", "행동", "이상", "방법", "사실", "정확", "결과", "재료", "직접", "관계", "연결", "소개", "의미", "능력", "주변", "정리", "준비", "규칙", "복잡", "경험", "내용", "이용", "이해", "발견", "활용", "미세", "해결", "연구", "수거", "다양", "가능", "분리", "특징", "아이디어", "처리", "출처", "확인", "조사", "이동", "영향", "정보", "기술", "심각", "보호", "수집", "통과", "변화", "허가", "흡수", "발명", "등장", "생산", "소재", "차단", "소비", "관찰", "소용", "완벽", "활동", "과정", "기능", "도달", "포함", "지속", "발전", "정상", "혼란", "형태", "방식", "외부", "목표", "세계적", "참가", "추측", "요청", "증거", "희귀", "관리", "반복", "적극"]}, {"id": "book27", "title": "앵무새 초록", "author": "이향안", "ondok_score": 260, "level": "5-04 ~ 5-08", "description": "외동아이가 앵무새를 통해 소통과 책임감을 배우는 성장 이야기로, 반려동물이 중요한 동반자가 될 수 있음을 보여줍니다.", "key_vocab": ["방법", "사실", "행동", "문제", "이상", "준비", "종류", "부분", "이해", "직접", "계획", "중요", "주변", "성격", "설명", "선택", "취소", "의미", "능력", "관계", "단순", "규칙", "정확", "상태", "포기", "변화", "균형", "소용", "기술", "등장", "예상", "다양", "온라인", "설득", "도구", "조건", "감각", "반복", "상황", "가능", "확인", "검색", "정보", "판단", "연구", "해결", "혼란", "독립", "완전", "안정", "시도", "영향", "심각", "이동", "상상", "도달", "제안", "완성", "발견", "미세", "과정", "정상", "완벽", "거부", "적극", "의견", "급격하다"]}, {"id": "book28", "title": "내가 모르는 사이에", "author": "김화요", "ondok_score": 260, "level": "5-05 ~ 5-09", "description": "생일 파티 후 일어난 도난 사건을 계기로 아이들 간의 믿음과 갈등을 그리며 공동체 안에서의 신뢰와 배려의 중요성을 탐구합니다.", "key_vocab": ["사실", "준비", "이해", "이상", "중심", "행동", "의미", "관계", "중요", "주변", "단순", "부분", "비교", "능력", "결과", "연결", "직접", "문제", "안내", "방법", "복잡", "경험", "정확", "설명", "방향", "정리", "결정", "종류", "규칙", "재료", "프로그램", "발견", "상황", "완전", "균형", "관찰", "확실", "무시", "심각", "확인", "증거", "상태", "완벽", "파악", "상상", "인정", "상대", "유지", "의지", "경쟁", "반복", "판단", "예상", "자극", "적극", "참여", "조건", "강력", "긍정", "정당", "다양", "완성", "보호", "보충", "부정", "동등", "주의"]}, {"id": "book29", "title": "늑대 원더", "author": "로잔느 패리", "ondok_score": 260, "level": "5-05 ~ 5-09", "description": "어린 늑대의 시선을 통해 자연과 가족, 성장의 이야기를 그리며 자연의 소중함과 생명의 연대를 느끼게 합니다.", "key_vocab": ["방향", "사실", "반대", "준비", "행동", "주변", "이상", "중요", "부분", "이해", "방법", "계획", "안내", "지도", "결과", "종류", "문제", "의미", "관계", "경험", "성격", "설명", "직접", "정확", "비교", "발견", "상대", "확인", "완전", "상황", "포기", "상태", "기술", "상상", "이동", "방식", "정지", "완벽", "확실", "표시", "보호", "시도", "지점", "참여", "배경", "가능", "경쟁", "통과", "무시", "목표", "감각", "반복", "행위", "증명", "안정", "기준", "고정", "포함", "온전", "주의", "설득", "긍정", "부정", "현장", "예측", "관찰", "의지", "제안", "강조"]}, {"id": "book30", "title": "소리를 보는 소년", "author": "김은영", "ondok_score": 260, "level": "5-05 ~ 5-09", "description": "청각 장애를 가진 소년이 소리를 눈으로 보는 능력을 통해 장애를 극복하는 용기와 인간의 가능성을 보여주는 희망적인 이야기입니다.", "key_vocab": ["사실", "주변", "복잡", "준비", "경험", "방향", "중요", "부분", "직접", "정확", "방법", "의미", "소개", "문제", "정리", "이해", "이상", "연결", "비교", "지도", "안내", "관리", "상상", "증거", "소용", "완전", "집중", "성질", "목표", "정상", "반복", "온전", "포기", "심각", "인정", "상황", "경쟁", "감각", "예상", "무시", "기본", "표현", "확실", "확인", "등장", "사례", "방안", "가능", "혼란", "예측", "수준", "효과"]}, {"id": "book31", "title": "닐과 순다리", "author": "미탈리 퍼킨스", "ondok_score": 260, "level": "5-06 ~ 6-01", "description": "순다르반스 지역을 배경으로 주인공 닐이 자연 속에서 모험하며 정체성을 찾고, 인간과 자연의 조화로운 공존을 따뜻하게 풀어냅니다.", "key_vocab": ["문제", "사실", "이상", "이해", "계획", "방법", "중요", "설명", "부분", "이용", "정확", "직접", "준비", "반대", "결과", "선택", "능력", "행동", "중심", "결정", "내용", "지도", "복잡", "보호", "확실", "상상", "집중", "관리", "표현", "소용", "가능", "확인", "시도", "제안", "대표", "기술", "포기", "완벽", "완전", "발견", "지원", "예상", "정교하다", "비율", "활동", "조사", "외부", "현장", "확고하다", "상대", "희귀", "강력", "변화", "상태", "해결", "의도", "무시", "상황", "요청", "경쟁", "우수", "배출", "향상", "표시", "탁월하다", "자료", "수정", "성질", "설득", "효과", "주제", "심각", "학습", "동의", "다양", "도구", "공평", "흡수", "인정"]}, {"id": "book32", "title": "가짜뉴스를 시작하겠습니다.", "author": "김경옥", "ondok_score": 260, "level": "5-07 ~ 6-02", "description": "유튜브 방송을 통해 주인공이 질투와 갈등을 극복하고 친구들과의 관계를 회복하며 미디어를 통해 자신의 이야기를 전달하는 힘을 탐구합니다.", "key_vocab": ["사실", "재료", "중요", "내용", "준비", "부분", "단순", "정리", "성격", "직접", "정확", "설명", "소개", "중심", "반대", "방법", "문제", "방향", "이용", "결과", "이해", "주변", "행동", "확인", "조사", "관리", "완전", "검색", "전달", "조건", "심각", "아이디어", "주장", "확실", "집중", "상상", "제안", "의견", "용도", "내부", "상황", "차단", "정지", "자극", "예상", "활용", "의지", "고정", "기본", "안정", "완벽", "성질", "참여", "동의", "삭제", "비판", "표시", "간접", "과장", "증거", "보관", "과정", "기능", "강조", "의도", "등장", "공개", "주의", "대표", "주제"]}, {"id": "book33", "title": "일주일의 학교", "author": "김혜진", "ondok_score": 270, "level": "5-08 ~ 6-02", "description": "매일 다른 학교를 다니며 특별한 경험을 쌓는 아이의 이야기를 통해 변화를 받아들이고 즐기는 법을 가르칩니다.", "key_vocab": ["문제", "부분", "재료", "직접", "행동", "정확", "사실", "안내", "준비", "선택", "반대", "계획", "복잡", "내용", "이해", "중요", "이용", "방법", "이상", "설명", "완전", "상황", "심각", "통과", "확인", "상상", "완성", "활용", "제안", "고정", "필수", "주의", "해결", "지지", "자극", "도구", "지적", "목표", "동의", "포함", "확실", "이동", "상태", "유지", "증거", "공평", "발견", "방식", "이하", "상대"]}, {"id": "book34", "title": "미래가 온다 미래 에너지", "author": "김성화, 권수진", "ondok_score": 270, "level": "5-08 ~ 6-02", "description": "에너지의 과학적 원리와 지속 가능한 발전 가능성을 탐구하며 과학적 호기심과 새로운 시각을 제공합니다.", "key_vocab": ["문제", "방법", "사실", "부분", "정확", "이용", "주변", "방향", "중요", "반대", "정리", "준비", "비교", "이상", "직접", "단계", "법칙", "발견", "실험", "강력", "폐기", "가능", "활용", "발명", "상상", "발달", "발생", "발전", "상태", "완전", "도달", "완벽", "연구", "주장", "배출", "처리", "증거", "통과", "분류", "진출", "등장", "수준", "기술", "조사", "판명", "결론", "작동", "유지", "보장", "세기", "확실", "검색", "분리", "내부", "우수"]}, {"id": "book35", "title": "어린 노동자와 희귀 금 속 탄탈", "author": "앙드레 마르와", "ondok_score": 270, "level": "5-09 ~ 6-03", "description": "희귀 금 속 '탄탈'의 여정을 통해 아동 노동과 자원 착취 문제를 조명하며 소비와 생산 과정의 연결성을 탐구하게 합니다.", "key_vocab": ["이상", "선택", "사실", "부분", "반대", "비교", "방법", "설명", "규칙", "결정", "문제", "활용", "희귀", "완성", "주제", "참가", "폐기", "세기", "기술", "관리", "준수", "기준", "확실", "생산", "정교하다", "원격", "온라인", "탐색", "발견", "다양", "참여", "활동", "소용", "처리", "작동", "가능", "소재", "분리", "파괴", "심각", "보호"]}, {"id": "book36", "title": "행운이 너에게 다가오는 중", "author": "이꽃님", "ondok_score": 270, "level": "5-09 ~ 6-04", "description": "평범한 청소년들의 유쾌한 일상을 통해 인생의 행운이란 자신이 만들어가는 것임을 강조하며 용기와 공감을 전합니다.", "key_vocab": ["사실", "문제", "의미", "준비", "반대", "중요", "이해", "이상", "주변", "방법", "성격", "계획", "직접", "정리", "행동", "복잡", "정확", "비교", "선택", "부분", "결과", "결정", "이용", "방향", "검사", "단순", "설명", "소개", "상황", "발견", "소용", "상상", "포기", "완전", "심각", "해결", "무시", "확실", "주장", "공평", "공개", "주제", "표현", "거부", "수준", "자료", "성과", "평가", "학습", "증거", "등장", "집중", "조건", "검색", "포함", "확인", "편의", "강조", "판단", "조사", "효과", "상태", "제안", "해답", "미세", "결론", "확고하다", "인정", "공통", "의견", "대표", "통과", "유지", "해석", "완벽", "설득", "경쟁", "참여", "기본", "혼란", "실험", "발달", "체험", "법칙", "실천", "온전", "예상", "적극"]}, {"id": "book37", "title": "동희의 오늘", "author": "임은하", "ondok_score": 280, "level": "5-10 ~ 6-04", "description": "다문화 가정에서 자란 동희가 정체성과 타인의 시선에 대해 고민하며 자신을 긍정적으로 마주하게 되는 성장 이야기입니다.", "key_vocab": ["사실", "문제", "이해", "준비", "이상", "부분", "규칙", "내용", "정리", "중심", "관계", "중요", "설명", "방법", "능력", "단순", "복잡", "소개", "결정", "프로그램", "정확", "반대", "행동", "지도", "성격", "이용", "상대", "포기", "참가", "심각", "완전", "확인", "상황", "관리", "상상", "주제", "해결", "복사", "공개", "감각", "발견", "세계적", "현실", "학습", "정당", "관찰", "단계", "제안", "수준", "집중", "상태", "보충", "의견", "공통", "아이디어", "등장", "소용", "절차", "확실", "지식", "이동", "영향", "관련", "기본", "의도", "대강"]}, {"id": "book38", "title": "세금 내는 아이들", "author": "옥효진", "ondok_score": 280, "level": "6-03 ~ 6-07", "description": "학교에서 가상의 나라를 운영하며 경제와 세금의 개념을 배우는 이야기로, 경제 교육을 쉽고 즐겁게 전달합니다.", "key_vocab": ["설명", "사실", "내용", "결정", "이상", "선택", "방법", "이해", "소개", "부분", "취소", "문제", "정확", "직접", "비교", "결과", "정리", "의미", "복잡", "준비", "반대", "주변", "종류", "계획", "경험", "지도", "행동", "단순", "규칙", "방향", "제안", "확인", "관리", "지원", "활동", "상황", "조건", "평가", "참여", "상상", "포기", "허가", "분리", "수거", "처리", "예상", "목표", "완전", "예정", "집중", "수정", "적극", "확실", "해결", "아이디어", "발견", "정보", "상태", "포함", "표현", "관련", "미세", "통과", "해당", "동의", "등장", "상대", "보관", "안정", "활용", "소비", "편의", "긍정", "절차", "기준", "토대", "다양", "주제", "강력", "주장", "수준", "심각", "완벽", "지적", "보장", "인정"]}, {"id": "book39", "title": "꽃 아주머니와 비밀의 방", "author": "김지선", "ondok_score": 290, "level": "6-04 ~ 6-08", "description": "새로 이사 온 독특한 아주머니와 어린 송이의 우정 이야기를 통해 이웃 간의 교감과 다정한 소통의 중요성을 따뜻하게 그려냅니다.", "key_vocab": ["사실", "이해", "설명", "문제", "중요", "단순", "직접", "비교", "정확", "준비", "부분", "정리", "경험", "내용", "연결", "주변", "능력", "이용", "규칙", "관계", "선택", "안내", "방법", "방향", "의미", "행동", "복잡", "상상", "표현", "다양", "현실", "이동", "상대", "완전", "변화", "관찰", "발견", "등장", "기술", "영향", "실험", "고정", "창조", "시도", "흡수", "학습", "제안", "세기", "인정", "통일", "검색", "방식", "기호", "평가", "배경", "구별", "편의", "혼란", "체험", "대표", "활동", "과장", "강력", "주장", "상황", "지점", "의견", "방안", "포기", "설득", "관련", "소용", "기본", "공통", "발달", "처리", "자료", "확인", "발전", "예상", "소재", "효과", "적극", "자주"]}, {"id": "book40", "title": "죽이고 싶은 아이", "author": "이꽃님", "ondok_score": 290, "level": "6-04 ~ 6-08", "description": "학내 왕따와 그로 인한 비극적 사건을 다루며 인간관계의 복잡성과 선악의 경계를 섬세하게 묘사한 작품입니다.", "key_vocab": ["사실", "문제", "행동", "이용", "이해", "이상", "내용", "직접", "중요", "부분", "준비", "성격", "프로그램", "관계", "결정", "의미", "능력", "주변", "검사", "설명", "정리", "결과", "선택", "방법", "정확", "단순", "계획", "편의", "발견", "완전", "증거", "인정", "완벽", "가능", "포기", "혼란", "조사", "주장", "표현", "판단", "관련", "상대", "상태", "상황", "수준", "상상", "확인", "무시", "현장", "조건", "보장", "확실", "의도", "자극", "추측", "공평", "미세", "소용", "통제", "요약", "영향", "폐지", "증명", "제도", "우수", "부정", "방식", "기본", "예상", "평가", "자료", "도구", "해당", "작동", "강조", "집중", "파괴", "강력"]}, {"id": "book41", "title": "시간을 건너는 집", "author": "김하연", "ondok_score": 310, "level": "6-09 ~ 7-04", "description": "시간을 넘나드는 마법적인 집에서 벌어지는 모험을 통해 따뜻한 가족애와 성장의 의미를 느끼게 하는 판타지 소설입니다.", "key_vocab": ["선택", "사실", "이상", "규칙", "방법", "이해", "문제", "내용", "부분", "준비", "설명", "행동", "직접", "결정", "정확", "복잡", "주변", "소개", "중요", "비교", "정리", "검사", "계획", "반대", "의미", "교환", "지도", "성격", "경험", "종류", "능력", "완전", "확인", "삭제", "상황", "확실", "상상", "예상", "무시", "가능", "검색", "인정", "증명", "심각", "조사", "요청", "혼란", "추측", "관련", "포기", "주제", "종료", "등장", "상대", "편의", "소용", "정지", "상태", "현실", "발견", "거부", "완벽", "차단", "예정", "정상", "조건", "연구", "특징", "처리", "소통", "기술", "운영", "기본", "파악", "온라인", "협조", "해결", "강제", "절차", "공개"]}, {"id": "book42", "title": "살아남는다는 것", "author": "구드룬 파우제방", "ondok_score": 310, "level": "6-10 ~ 7-04", "description": "제2차 세계대전 말기, 피난길에서 겪은 고난을 통해 전쟁의 참상과 인간의 회복력, 희망을 조명하는 실화 소설입니다.", "key_vocab": ["이상", "사실", "중요", "부분", "정확", "직접", "정리", "문제", "교환", "방향", "준비", "이해", "방법", "주변", "설명", "지도", "반대", "의미", "결정", "내용", "이용", "경험", "소개", "행동", "계획", "복잡", "비교", "목적", "규칙", "능력", "중심", "안내", "연결", "상황", "완전", "가능", "도구", "상태", "발견", "확인", "상상", "예상", "파괴", "혼란", "반복", "확실", "소용", "혼잡", "공동", "집중", "해결", "소통", "관리", "보호", "설득", "정상", "감각", "효과", "포기", "제안", "표시", "지시", "도달", "심각", "전달", "관련", "보관", "강조", "조건", "차단", "현실", "나열", "다양", "처리", "구분", "목표"]}, {"id": "book43", "title": "우리만의 편의점 레시피", "author": "범유진", "ondok_score": 310, "level": "6-10 ~ 7-04", "description": "편의점 음식을 활용한 창의적 요리법을 소개하며 일상 속에서 즐거움과 작은 창의성을 발휘하는 방법을 알려줍니다.", "key_vocab": ["문제", "준비", "사실", "규칙", "이상", "주변", "직접", "재료", "부분", "행동", "정리", "연결", "반대", "선택", "프로그램", "이용", "소개", "복잡", "이해", "성격", "계획", "단순", "방법", "중요", "설명", "지도", "관계", "안내", "내용", "중심", "의미", "경험", "종류", "비교", "편의", "무시", "동의", "완성", "보호", "상상", "확인", "조건", "가능", "완전", "상황", "도구", "확실", "검색", "상대", "발견", "포기", "작동", "참여", "집중", "고정", "상태", "완벽", "아이디어", "의도", "요구", "인정", "관리", "목표", "특성", "지원", "예상", "기준", "예정", "제안", "심사", "참가", "진출", "등장", "소비", "통과", "처리"]}, {"id": "book44", "title": "우리가 함께 싸울 때", "author": "에우달드 에스플루가", "ondok_score": 310, "level": "6-10 ~ 7-06", "description": "역사를 바꾼 시민 운동과 저항의 순간들을 통해 개인의 용기와 연대가 사회 변화를 이끌어내는 과정을 보여줍니다.", "key_vocab": ["행동", "반대", "문제", "사실", "방법", "계획", "이상", "결과", "관계", "내용", "중요", "지도", "중심", "직접", "준비", "이해", "부분", "결정", "경험", "설명", "이용", "단순", "목적", "의미", "규칙", "연결", "주변", "활동", "현실", "변화", "상황", "참가", "대표", "의견", "목표", "지지", "해결", "영향", "주장", "공동", "다양", "상상", "발전", "의지", "지식", "예상", "보호", "강제", "효과", "심각", "요구", "정보", "완전", "충돌", "운영", "인정", "무시", "배경", "표현", "세계적", "성과", "과정", "확인", "집중", "완벽", "지원", "파괴", "제도", "온라인", "거부", "기술", "증명", "가능", "세기", "방식", "결론", "포기", "증거", "통과"]}, {"id": "book45", "title": "기소영의 친구들", "author": "정은주", "ondok_score": 310, "level": "6-10 ~ 7-06", "description": "가까운 친구의 사고 소식을 통해 이별과 삶의 본질에 대한 묵직한 메시지를 전달하며 친구의 의미를 고민하게 합니다.", "key_vocab": ["사실", "주변", "준비", "문제", "방법", "직접", "성격", "이상", "의미", "복잡", "이해", "설명", "반대", "결정", "정리", "정확", "부분", "중심", "중요", "결과", "연결", "행동", "계획", "방향", "단순", "비교", "상황", "제안", "심각", "완전", "상상", "반복", "확인", "의견", "상태", "관련", "예상", "배경", "조건", "포기", "독립", "절차", "현실", "인정", "아이디어", "대책", "체험", "학습", "예정", "보안", "도구", "확실", "변화", "지적", "성장", "파악", "과정", "무시", "소용", "동의", "집중", "연구", "증명", "결론", "전달", "자극", "해결", "방식", "지시", "상대", "통과", "가능", "증거", "관리", "고정", "성능"]}, {"id": "book46", "title": "아무것도 안 하는 녀석들", "author": "김려령", "ondok_score": 310, "level": "7-01 ~ 7-06", "description": "어려운 환경 속에서도 희망과 유머를 잃지 않는 가족의 이야기를 통해 어려움을 극복하는 용기와 따뜻한 메시지를 전달합니다.", "key_vocab": ["정리", "문제", "계획", "준비", "복잡", "연결", "이상", "사실", "설명", "결정", "직접", "방법", "목적", "내용", "방향", "행동", "경험", "관계", "재료", "결과", "프로그램", "선택", "부분", "확인", "완전", "탐색", "심각", "해결", "반복", "강력", "완성", "관련", "편의", "도구", "보관", "확실", "정지", "극복", "세기", "상태", "통과", "예상", "처리", "가능", "설득", "차단", "표현", "조건", "상상", "활동", "주의", "긍정", "절차", "접수", "발견", "관리", "포기", "미세", "대표", "포함", "파악", "기술", "아이디어", "필수", "공개", "지점", "과정", "인정", "완벽", "자주", "의도", "분리", "고려", "검색", "심사", "배경", "삭제", "정당", "다양", "강조", "허가", "강제"]}, {"id": "book47", "title": "먹고 마시고 요리하라", "author": "강재호", "ondok_score": 310, "level": "7-01 ~ 7-06", "description": "음식과 역사의 연결을 통해 인류 문명을 탐구하며, 음식을 통해 역사와 문화를 이해하는 흥미로운 경험을 할 수 있습니다.", "key_vocab": ["이용", "재료", "비교", "결과", "중요", "주변", "사실", "부분", "종류", "의미", "이상", "방법", "중심", "문제", "직접", "소개", "선택", "내용", "경험", "준비", "다양", "발달", "대표", "영향", "방식", "생산", "소비", "배경", "과정", "이동", "세계적", "기술", "유지", "발견", "특성", "가능", "세기", "발전", "형태", "시도", "관련", "인정", "유래", "변화", "보관", "등장", "공통", "필수", "기준", "활용", "상황", "완성", "구분", "상태", "성장", "유용", "조건", "안정", "표현", "도구", "활동", "상대", "원인", "수단", "기본"]}, {"id": "book48", "title": "5번 레인", "author": "은소홀", "ondok_score": 310, "level": "7-01 ~ 7-06", "description": "수영 대회에 출전한 주인공의 도전과 성장을 통해 노력과 성취의 의미를 감동적으로 그려낸 이야기입니다.", "key_vocab": ["중요", "준비", "사실", "이상", "정리", "결과", "문제", "이해", "정확", "설명", "의미", "복잡", "결정", "반대", "선택", "직접", "부분", "방법", "안내", "연결", "경험", "규칙", "중심", "능력", "방향", "지도", "주변", "성격", "소개", "확인", "주장", "목표", "집중", "평가", "지점", "확실", "상상", "반복", "참가", "예상", "포기", "통과", "관찰", "상태", "발견", "상대", "예외", "완성", "대표", "과정", "보완", "활동", "인정", "효과", "지원", "상황", "성질", "소용", "기술", "조건", "온전", "정지", "감각", "심각", "완전", "측정", "안정", "등장", "연구", "실험", "추리", "성장", "심사", "균형", "아이디어", "완벽", "주의", "현실", "주제", "공평"]}, {"id": "book49", "title": "그 애를 만나다", "author": "유니게", "ondok_score": 320, "level": "7-02 ~ 7-07", "description": "가족의 몰락과 새로운 환경에서의 적응을 다룬 성장 소설로, 삶의 어려움 속에서도 잃지 않는 용기와 사랑의 가치를 배울 수 있습니다.", "key_vocab": ["문제", "사실", "이해", "이상", "부분", "준비", "의미", "방향", "직접", "설명", "중요", "방법", "경험", "계획", "정확", "연결", "종류", "결정", "결과", "목적", "이용", "취소", "복잡", "정리", "규칙", "성격", "내용", "주변", "반대", "지도", "선택", "재료", "상상", "상태", "발견", "현실", "기술", "표현", "완전", "상황", "포기", "성장", "무시", "심각", "도구", "완벽", "예상", "수준", "지점", "주제", "공평", "도달", "학습", "완성", "관찰", "경쟁", "집중", "소용", "통과", "혼란", "현장", "확실", "조사", "방식", "동의", "해답", "반복", "의견", "다양", "관리", "기초", "정보", "포함", "변화", "확인", "상대", "안정", "해결", "예측", "지원", "강조", "배경"]}, {"id": "book50", "title": "소리를 삼킨 소년", "author": "부연정", "ondok_score": 320, "level": "7-03 ~ 7-07", "description": "아스퍼거 증후군과 함묵증을 가진 소년이 세상과 소통하는 방법을 찾아가는 과정을 통해 장애에 대한 이해와 공감을 섬세하게 그립니다.", "key_vocab": ["사실", "이상", "중요", "정확", "부분", "주변", "의미", "이해", "문제", "설명", "반대", "능력", "준비", "결과", "행동", "방법", "내용", "프로그램", "직접", "정리", "관계", "경험", "교환", "안내", "규칙", "복잡", "편의", "관찰", "발견", "확인", "현장", "조사", "해결", "집중", "상대", "확실", "반복", "표현", "특징", "증거", "포기", "효과", "감각", "혼란", "현실", "상상", "의도", "무시", "상황", "균형", "요청", "운영", "결론", "안정", "상태", "미세", "완전", "필수", "심각", "등장", "원인", "가능", "공동", "보호", "연구", "실험", "관측", "검색", "추측", "추리", "의지", "조건", "예외", "정보", "판단", "발생", "완벽", "제안", "성장", "자극", "지적", "과정", "관련", "차단"]}, {"id": "book51", "title": "애니캔", "author": "은경", "ondok_score": 320, "level": "7-03 ~ 7-07", "description": "반려동물 상점에서 벌어지는 사건을 통해 가족 간의 갈등과 화해를 그리며 동물과 인간의 유대가 가지는 의미를 새롭게 느끼게 합니다.", "key_vocab": ["방법", "문제", "설명", "직접", "이상", "사실", "중요", "결과", "준비", "결정", "성격", "내용", "행동", "안내", "정리", "연결", "이해", "주변", "부분", "계획", "이용", "종류", "비교", "프로그램", "목적", "반대", "선택", "규칙", "정확", "경험", "소개", "교환", "의미", "기술", "연구", "상상", "확인", "의견", "집중", "동의", "확실", "상황", "완전", "상태", "적극", "심각", "인정", "가능", "다양", "조사", "대표", "보충", "해결", "과정", "관련", "예상", "상대", "참여", "예외", "지지", "사례", "소비", "표준", "생산", "활용", "혼란", "효과", "내부", "설득", "완벽", "이동", "탐색", "검색", "정지", "보안", "조건", "지적", "단계", "지원"]}, {"id": "book52", "title": "음악의 집", "author": "클라우디오 아바도", "ondok_score": 320, "level": "7-04 ~ 7-08", "description": "음악가 가족 속에서 자란 아이가 음악을 통해 세상을 이해하며 자기 발견의 과정을 보여주는 성장 이야기입니다.", "key_vocab": ["부분", "이해", "선택", "설명", "단순", "종류", "중요", "준비", "직접", "연결", "사실", "복잡", "의미", "방법", "결과", "이상", "내용", "관계", "경험", "계획", "규칙", "성격", "결정", "문제", "재료", "비교", "목적", "다양", "형태", "해석", "표현", "세기", "상상", "가능", "단계", "완벽", "지식", "발견", "유래", "주제", "등장", "완전", "의도", "전달", "활용", "유사", "작동", "반복", "상대", "구분", "연구", "제안", "방식", "균형", "기술", "효과", "성질", "기호", "변화", "도구", "독창", "심각", "확고하다", "인정", "집중", "해당", "의견", "과정", "의존", "성과", "강력", "요구", "협조", "해답", "현실", "밀접", "혼란", "기능", "발달", "향상", "지시", "탐구", "지속", "수정"]}, {"id": "book53", "title": "라면을 먹으면 숲이 사라져", "author": "최원형", "ondok_score": 320, "level": "7-04 ~ 7-08", "description": "거위털 패딩과 관련된 동물 학대 문제를 통해 소비 결정이 환경과 생명에 미치는 영향을 깨닫게 하는 윤리적 탐구서입니다.", "key_vocab": ["문제", "사실", "중요", "방법", "주변", "결과", "정확", "부분", "이용", "방향", "비교", "종류", "이해", "연결", "중심", "준비", "관계", "행동", "이상", "복잡", "목적", "반대", "연구", "보호", "이동", "변화", "다양", "확인", "차단", "흡수", "생산", "미세", "상상", "영향", "배출", "발견", "활용", "처리", "해결", "유지", "방식", "충돌", "활동", "소비", "성질", "관찰", "표현", "상황", "조건", "포함", "대표", "효과", "지정", "예정", "제안", "파괴", "추측", "감각", "실천", "형태", "소통", "과정", "확실", "발생", "세계적", "완벽", "분리", "원인", "가능", "조사", "관련", "상태"]}, {"id": "book54", "title": "프런트 데스크", "author": "켈리 양", "ondok_score": 320, "level": "7-04 ~ 7-08", "description": "이민자 가족의 이야기를 통해 미국 사회의 불평등과 차별 속에서도 꿈을 키워나가는 주인공의 용기와 희망을 전합니다.", "key_vocab": ["문제", "사실", "이해", "설명", "중요", "계획", "부분", "준비", "방법", "직접", "의미", "이상", "정확", "내용", "안내", "선택", "소개", "주변", "행동", "결정", "복잡", "교환", "이용", "반대", "연결", "결과", "경험", "목적", "관리", "확인", "상황", "상상", "참가", "운영", "발견", "조건", "판단", "포기", "보안", "표현", "상태", "무시", "완벽", "의견", "동의", "제안", "확실", "현실", "복사", "반복", "집중", "시도", "보호", "고정", "완전", "접수", "편의", "공평", "예상", "소용", "처리", "주의", "기본", "완성", "인정", "설득", "활용", "가능", "소유", "차단", "방식", "전달", "해결", "수준", "요청", "거부", "주제", "수집", "부정", "기준", "심각", "조사", "방안"]}, {"id": "book55", "title": "독고솜에게 반하면", "author": "허진희", "ondok_score": 330, "level": "7-05 ~ 7-09", "description": "새로운 전학생을 둘러싼 소문과 오해 속에서 관계와 이해의 중요성을 유머러스하게 풀어낸 이야기입니다.", "key_vocab": ["사실", "소개", "중요", "문제", "능력", "이해", "직접", "준비", "성격", "부분", "정확", "행동", "정리", "중심", "설명", "결정", "의미", "복잡", "방법", "이상", "규칙", "결과", "내용", "주변", "단순", "방향", "지도", "이용", "계획", "비교", "상황", "상대", "발견", "상태", "활동", "정보", "무시", "추리", "해결", "확인", "증거", "효과", "상상", "인정", "파악", "확실", "영향", "집중", "표현", "과장", "예상", "성질", "자극", "현장", "전달", "의도", "보호", "반복", "포기", "완전", "주장", "관련", "요구", "가능", "기준", "처리", "강조", "의지", "의견", "예측", "완벽", "기본", "수준", "관찰", "예외", "정상", "소용", "감각", "긍정", "검색", "근거", "적극", "핵심", "다양", "조건"]}, {"id": "book56", "title": "오백 년째 열다섯", "author": "김혜정", "ondok_score": 330, "level": "7-05 ~ 7-09", "description": "신비로운 세 쌍둥이 전학생을 통해 청소년기의 우정과 정체성 찾기를 따뜻하게 그려낸 이야기입니다.", "key_vocab": ["이해", "이상", "주변", "문제", "준비", "사실", "설명", "반대", "행동", "부분", "선택", "의미", "방법", "소개", "정리", "중요", "이용", "단순", "계획", "안내", "관계", "연결", "복잡", "중심", "능력", "목적", "경험", "방향", "내용", "비교", "규칙", "프로그램", "성격", "정확", "교환", "결정", "단계", "상황", "활동", "확인", "상대", "체험", "학습", "상상", "완전", "보호", "가능", "무시", "집중", "운영", "상태", "편의", "부정", "예정", "관리", "제안", "조건", "관련", "인정", "강력", "반복", "의견", "활약", "안정", "관찰", "유지", "완벽", "형태", "주의", "전달", "발견", "통과", "작동"]}, {"id": "book57", "title": "할아버지의 달콤한 유산", "author": "평수화", "ondok_score": 330, "level": "7-05 ~ 7-09", "description": "유산을 둘러싼 가족의 갈등과 화해를 통해 가족의 진정한 의미와 책임, 희생의 가치를 섬세하게 그려낸 작품입니다.", "key_vocab": ["사실", "이해", "행동", "부분", "중요", "방법", "이상", "설명", "직접", "문제", "능력", "반대", "계획", "준비", "의미", "선택", "정확", "복잡", "성격", "결과", "종류", "규칙", "주변", "방향", "관계", "목적", "비교", "정리", "결정", "이용", "상황", "상태", "완전", "온전", "예상", "발견", "인정", "등장", "설득", "발생", "참가", "고정", "상대", "효과", "반복", "보관", "관리", "포기", "집중", "변화", "기능", "방식", "무시", "소용", "결론", "의견", "해결", "미세", "상상", "가능", "확실", "성질", "구분", "자극", "혼란", "완벽", "파악", "활동", "확인", "표준", "표현", "의지", "정상", "주장", "심각", "시도", "동의"]}, {"id": "book58", "title": "좋아하는 것을 발견하는 법", "author": "이다혜", "ondok_score": 330, "level": "7-06 ~ 7-10", "description": "다양한 체크리스트와 테스트를 통해 자신도 몰랐던 흥미와 관심사를 발견하고 꿈과 목표를 설정하도록 돕는 진로 찾기 가이드입니다.", "key_vocab": ["중요", "사실", "이상", "비교", "주변", "경험", "계획", "관계", "부분", "이해", "설명", "성격", "방법", "직접", "능력", "내용", "정리", "복잡", "문제", "결과", "행동", "프로그램", "소개", "규칙", "준비", "반대", "단순", "의미", "종류", "연결", "발견", "관찰", "상황", "상상", "관련", "과정", "관리", "평가", "파악", "가능", "상대", "기술", "활동", "대표", "해설", "목표", "집중", "검색", "현실", "자료", "심각", "정보", "소통", "다양", "확인", "의견", "특징", "온라인", "조건", "배경", "기본", "형태", "경쟁", "적극", "수단", "연구", "탐색", "예측", "진출", "수집", "운영", "해결", "주제", "영향", "지속", "포함", "범위", "요약", "활용", "효과", "완벽", "탐구", "변화"]}, {"id": "book59", "title": "바람이 되어 살아낼게", "author": "유가영", "ondok_score": 330, "level": "7-06 ~ 7-10", "description": "참사를 겪은 생존자의 시선으로 고통을 딛고 살아가는 이야기를 통해 연대와 희망의 중요성을 느끼게 하는 치유의 기록입니다.", "key_vocab": ["사실", "프로그램", "주변", "문제", "경험", "이해", "이상", "직접", "중요", "결정", "의미", "결과", "선택", "부분", "행동", "목적", "준비", "단순", "이용", "방법", "연결", "안내", "내용", "성격", "설명", "활동", "상황", "상태", "극복", "목표", "지원", "현실", "심각", "집중", "과정", "요청", "연구", "완전", "변화", "상상", "이동", "온라인", "독립", "제안", "참여", "성장", "대표", "안정", "발견", "상대", "부정", "인정", "포기", "지식", "현장", "원인", "예상", "보호", "예정", "확인", "다양", "혼란", "외부", "주의", "자료", "표현", "포함", "주제", "제도", "요구", "아이디어", "운영"]}, {"id": "book60", "title": "생명과학이 이렇게 쉬울 리 없어", "author": "윤자영", "ondok_score": 330, "level": "7-06 ~ 7-10", "description": "생명의 본질과 생명과학의 기초를 재미있게 설명하며 생물학적 지식을 바탕으로 환경과 생태계를 새롭게 바라보게 합니다.", "key_vocab": ["부분", "이용", "결과", "결정", "이해", "중요", "종류", "사실", "연결", "교환", "방법", "의미", "반대", "문제", "이상", "설명", "관계", "정리", "비교", "자극", "다양", "과정", "흡수", "유지", "감각", "전달", "기능", "이동", "특징", "연구", "실험", "분류", "분리", "활동", "기준", "보호", "확인", "표현", "발생", "법칙", "조건", "관찰", "상태", "영향", "변화", "구별", "정상", "포함", "특성", "기술", "생산", "원인", "발달", "발견", "대표", "세기", "상황", "형태"]}, {"id": "book61", "title": "하면 좀 어떤 사이", "author": "조우리 외", "ondok_score": 330, "level": "7-06 ~ 7-10", "description": "일상 속 소소한 순간들을 통해 서로의 마음을 알아가며 관계의 소중함과 사랑, 이해로 가득 찬 추억을 담아낸 이야기입니다.", "key_vocab": ["사실", "이해", "문제", "검사", "의미", "이상", "중요", "반대", "복잡", "준비", "소개", "직접", "부분", "결과", "설명", "정확", "주변", "비교", "행동", "선택", "정리", "경험", "연결", "프로그램", "규칙", "단순", "관계", "내용", "계획", "취소", "방법", "학습", "상대", "고정", "완전", "확인", "상황", "편의", "체험", "상태", "포기", "조건", "통제", "상상", "인정", "무시", "다양", "방식", "해석", "발견", "가능", "운영", "현장", "검색", "적극", "참여", "파괴", "의견", "표현", "증거", "판정", "과정", "확실", "안정", "정보", "혼란", "동의", "사고", "활용", "기초", "기준", "절차", "공통", "대책", "공개", "증명", "변화", "거부", "주제", "집중", "완성", "처리"]}, {"id": "book62", "title": "소금아이", "author": "이희영", "ondok_score": 330, "level": "7-06 ~ 7-10", "description": "섬에서 생활하는 소년이 현실의 어려움과 맞서며 강인한 정신을 길러나가는 성장 이야기로, 섬 생활의 고독과 끈끈한 가족애를 그립니다.", "key_vocab": ["사실", "문제", "정확", "이해", "단순", "의미", "준비", "부분", "소개", "관계", "결과", "정리", "직접", "복잡", "계획", "반대", "중요", "성격", "경험", "안내", "규칙", "방법", "방향", "이상", "주변", "내용", "결정", "연결", "설명", "상대", "편의", "확인", "상황", "증거", "완전", "보호", "발견", "상상", "확실", "조건", "가능", "변화", "등장", "소용", "의도", "포기", "정상", "기본", "무시", "감각", "현실", "예측", "주의", "통과", "주제", "집중", "운영", "삭제", "완벽", "검색", "다양", "평가", "방식", "종료", "원인", "절차", "정지", "유용", "부정", "주장", "동의", "해석", "강제", "유지"]}, {"id": "book63", "title": "필터를 설치하시겠습니까?", "author": "범유진", "ondok_score": 330, "level": "7-06 ~ 7-10", "description": "사회적 압박과 외모지상주의에 대한 비판을 청소년의 시선으로 풀어내며, 타인의 시선에서 벗어날 용기를 심어주는 이야기입니다.", "key_vocab": ["주변", "이상", "이용", "사실", "중요", "선택", "방법", "행동", "이해", "부분", "직접", "비교", "준비", "의미", "반대", "문제", "정리", "관계", "방향", "프로그램", "계획", "정확", "규칙", "연결", "내용", "설명", "교환", "단순", "삭제", "완전", "확인", "완벽", "평가", "편의", "무시", "가능", "현실", "활동", "상태", "상대", "인정", "증거", "확실", "관리", "상상", "작동", "실행", "법칙", "상황", "소용", "조건", "발견", "종료", "차단", "기본", "운영", "수준", "흡수", "반복", "다양", "지원", "집중", "요청", "주제", "조사", "온라인", "공개", "오프라인", "포기", "자극", "형태"]}, {"id": "book64", "title": "어, 지금 땅 움직였지?", "author": "김도형", "ondok_score": 340, "level": "7-07 ~ 8-01", "description": "지진과 지질학을 중심으로 지구의 역동성을 탐구하며, 자연재해의 파괴력과 예방의 중요성을 강조하는 과학 교양서입니다.", "key_vocab": ["결과", "사실", "비교", "이상", "이용", "방향", "부분", "주변", "방법", "정확", "직접", "설명", "반대", "행동", "중요", "이해", "단순", "관계", "발생", "연구", "변화", "이동", "관측", "관련", "내부", "전달", "도달", "가능", "원인", "예측", "영향", "지표", "활동", "실험", "상대", "해당", "기술", "강력", "발견", "다양", "조사", "정보", "확인", "단계", "예상", "과정", "파악", "확실", "주장", "자료", "상태", "사례", "반복", "기준", "해석", "구분", "관찰", "특징", "생산", "상상", "발전", "측정", "활용", "안정", "지점"]}, {"id": "book65", "title": "1인 방송 시작하는 법", "author": "김기한", "ondok_score": 340, "level": "7-07 ~ 8-01", "description": "크리에이터를 꿈꾸는 청소년을 대상으로 방송의 현실과 준비 과정, 건강한 방송 문화를 만들기 위한 조언을 담은 가이드입니다.", "key_vocab": ["프로그램", "부분", "방법", "선택", "준비", "직접", "이용", "설명", "중요", "문제", "내용", "소개", "복잡", "계획", "경험", "결과", "이상", "사실", "연결", "이해", "정리", "주변", "단순", "의미", "행동", "비교", "기능", "효과", "가능", "활용", "운영", "다양", "기본", "검색", "소통", "관련", "활동", "변경", "확인", "배경", "실행", "방식", "도구", "발전", "정보", "상황", "상태", "완성", "기술", "성능", "표현", "안정", "지정", "집중", "전달", "삭제", "복사", "영향", "해당", "시도", "주제", "지식", "미만", "기준", "경쟁", "필수", "변화", "과정", "해결", "유형"]}, {"id": "book66", "title": "우리의 정원", "author": "김지현", "ondok_score": 340, "level": "7-07 ~ 8-04", "description": "아이돌 그룹을 통해 우정을 쌓아가는 고등학생들의 이야기로, 서로의 차이를 인정하고 지지하며 함께 성장하는 과정을 그립니다.", "key_vocab": ["사실", "중요", "이해", "부분", "설명", "의미", "선택", "방법", "내용", "프로그램", "직접", "정리", "문제", "관계", "주변", "연결", "반대", "성격", "복잡", "목적", "이상", "정확", "결정", "취소", "중심", "비교", "행동", "준비", "가능", "배경", "상대", "검색", "고정", "활동", "자료", "상상", "평가", "확인", "상황", "예상", "완전", "조건", "보호", "관련", "현실", "목표", "영향", "반복", "구분", "온전", "완성", "등장", "종료", "심각", "분리", "수거", "상태", "단정", "기본", "기준", "시도", "과정", "방식", "표현", "공개", "의견", "동의", "분류", "판단", "발견", "주제", "관리", "해석", "유지", "집중", "대강", "참여"]}, {"id": "book67", "title": "누가 내 모습을 훔쳤을까", "author": "타니아 로이드 치", "ondok_score": 340, "level": "7-07 ~ 8-04", "description": "사생활과 보안 기술이 가져온 변화를 청소년의 시각에서 탐구하며 기술 활용의 책임과 윤리적 선택의 중요성을 상기시킵니다.", "key_vocab": ["문제", "계획", "설명", "이상", "사실", "안내", "준비", "반대", "방법", "정리", "이해", "중요", "내용", "이용", "행동", "주변", "정확", "소개", "부분", "결정", "규칙", "능력", "연결", "방향", "의미", "직접", "선택", "완전", "공개", "보안", "제안", "확인", "확실", "보호", "상황", "해결", "집중", "완벽", "관리", "관련", "주장", "예상", "활동", "시도", "심각", "발견", "아이디어", "삭제", "무시", "자료", "기술", "상태", "상상", "방식", "정보", "가능", "주제", "유지", "의견", "혼란", "운영", "상대", "포기", "기법", "공동", "탐구", "지원", "영향", "변화", "표현", "요청", "판단", "성과", "온라인", "참여", "설득", "고정", "완성", "요구", "복사", "검색"]}, {"id": "book68", "title": "어린이가 알아야 할 가짜 뉴스와 미디어 리터러시", "author": "채화영", "ondok_score": 340, "level": "7-09 ~ 8-04", "description": "뉴스의 본질과 가짜뉴스의 문제를 어린이 눈높이에 맞춰 설명하며 올바른 미디어 소비 습관과 비판적 사고를 길러줍니다.", "key_vocab": ["사실", "내용", "이용", "정확", "직접", "중요", "문제", "부분", "능력", "계획", "의미", "결과", "관계", "방법", "목적", "행동", "이상", "성격", "이해", "결정", "중심", "경험", "반대", "정보", "확인", "전달", "지지", "다양", "자극", "의견", "검색", "비판", "영향", "심각", "상황", "등장", "구별", "관련", "개혁", "발견", "발달", "생산", "반복", "표현", "주제", "공개", "소통", "대책", "판단", "조건", "주장", "주의", "자료", "출처", "연구", "온라인", "방지", "혼란", "지원", "보호", "공동", "대표", "활동", "삭제", "포함", "평가", "가능", "상대", "인정", "형태", "실행", "발생", "독립", "예상"]}, {"id": "book69", "title": "조금만 버텨, 지금 구하러 갈게!", "author": "김강윤", "ondok_score": 350, "level": "7-10 ~ 8-04", "description": "시골 마을에서 성장한 저자가 인생에서 마주한 도전과 극복의 이야기를 통해 도전과 연대의 중요성을 전합니다.", "key_vocab": ["중요", "준비", "문제", "사실", "성격", "부분", "경험", "행동", "능력", "결과", "주변", "방법", "관계", "검사", "선택", "비교", "목적", "이해", "내용", "이상", "정확", "직접", "반대", "설명", "프로그램", "현장", "상황", "목표", "인정", "포기", "다양", "경쟁", "과정", "기술", "판단", "표현", "상상", "집중", "현실", "수준", "해결", "긍정", "평가", "완벽", "관련", "영향", "가능", "예측", "대표", "통과", "조건", "기본", "상대", "지식", "활동", "무시", "심각", "성과", "완전", "기준", "시도", "형태", "방식", "상태", "발견", "정보", "전달", "해석", "보장"]}];
+
+  </script>
+
+  <script>
+    /************************************
+     *  데모 모드 감지 & 간단 파이어스토어 모킹
+     ************************************/
+    const FORCE_DEMO = true; // 실 서비스 연결 시 false로 바꾸세요.
+    const isDemoMode = FORCE_DEMO || !firebaseConfig || !firebaseConfig.projectId || /YOUR_PROJECT_ID/i.test(firebaseConfig.projectId||"");
+
+    const deepClone = obj => JSON.parse(JSON.stringify(obj));
+
+    const DemoStore = {
+      users: {}, reviews: [], loans: {}, _uidSeq: 1,
+      newUid(){ return 'u_'+(this._uidSeq++); }
+    };
+
+    const FieldValue = {
+      serverTimestamp(){ return new Date(); },
+      increment(n){ return {__inc:n}; },
+      arrayUnion(...items){ return {__op:'arrayUnion', items}; },
+      arrayRemove(...items){ return {__op:'arrayRemove', items}; }
+    };
+
+    function applyUpdate(target, updateObj){
+      for(const k in updateObj){
+        const v = updateObj[k];
+        const path = k.split('.');
+        let ref = target;
+        for(let i=0;i<path.length-1;i++){
+          if(typeof ref[path[i]]!=='object' || ref[path[i]]===null) ref[path[i]] = {};
+          ref = ref[path[i]];
+        }
+        const last = path[path.length-1];
+        if(v && typeof v==='object' && v.__inc){
+          ref[last] = (ref[last]||0) + v.__inc;
+        } else if(v && typeof v==='object' && v.__op==='arrayUnion'){
+          const arr = Array.isArray(ref[last])? ref[last] : [];
+          v.items.forEach(it=>{ if(!arr.includes(it)) arr.push(it); });
+          ref[last] = arr;
+        } else if(v && typeof v==='object' && v.__op==='arrayRemove'){
+          const arr = Array.isArray(ref[last])? ref[last] : [];
+          ref[last] = arr.filter(x=> !v.items.includes(x));
+        } else {
+          ref[last] = v;
+        }
+      }
+      return target;
+    }
+
+    const DemoAuth = {
+      _user:null,_listeners:[],
+      onAuthStateChanged(cb){ this._listeners.push(cb); setTimeout(()=>cb(this._user),0); },
+    createUserWithEmailAndPassword(email, password){
+  return new Promise((resolve,reject)=>{
+    if(!email || !password || password.length<6) return reject(new Error('비밀번호는 6자 이상이어야 합니다.'));
+    const existing = Object.values(DemoStore.users).find(u=>u.email===email);
+    if(existing) return reject(new Error('이미 가입된 이메일입니다.'));
+    const uid = DemoStore.newUid();
+    DemoStore.users[uid] = { 
+  name: email.split('@')[0], email, role:'student',
+  createdAt:new Date(), lastActivity:new Date(),
+  points: 0,
+  rewardLog: [],              // ✅ 보상 로그
+  testResults: {},            // ✅ 기본값
+  myLibrary: { reading: [], finished: [] }, // ✅ 기본값
+  unknownWords: [],
+  learnHistory: {},
+  password: password
+};
+    this._user={uid,email};
+    this._listeners.forEach(cb=>cb(this._user));
+    resolve({user:this._user});
+  });
+},
+
+signInWithEmailAndPassword(email, password){
+  return new Promise((resolve,reject)=>{
+    let entry = Object.entries(DemoStore.users).find(([uid,u])=>u.email===email);
+    if(!entry){
+      const uid = DemoStore.newUid();
+      DemoStore.users[uid]={ 
+        name: email.split('@')[0] || '사용자', email, role:'student',
+        createdAt:new Date(), lastActivity:new Date(),
+        points:0, testResults:{}, myLibrary:{reading:[], finished:[]},
+        unknownWords:[], learnHistory:{},
+        password: password   // ★ 최초 로그인 시 입력값을 저장
+      };
+      entry=[uid,DemoStore.users[uid]];
+    }else{
+      // 기존 유저인데 비번이 비어 있다면 이번 입력으로 기록(데모 편의)
+      if(!entry[1].password && password) entry[1].password = password;   // ★ 추가(선택)
+    }
+    this._user={uid:entry[0], email};
+    this._listeners.forEach(cb=>cb(this._user));
+    resolve({user:this._user});
+  });
+},
+      signOut(){ return new Promise(res=>{ this._user=null; this._listeners.forEach(cb=>cb(null)); res(); }); }
+    };
+
+    const DemoDB = {
+      collection(name){
+        return {
+          doc(id){
+            return {
+              async get(){
+                if(name==='users'){
+                  const data = DemoStore.users[id];
+                  return {exists:!!data, id, data:()=>deepClone(data)};
+                }
+                if(name==='books'){
+                  const loanedBy = DemoStore.loans[id] || null;
+                  return {exists:true, id, data:()=>({loanedBy})};
+                }
+                return {exists:false, id, data:()=>null};
+              },
+              async set(data,{merge}={merge:false}){
+                if(name==='users'){
+                  DemoStore.users[id] = merge
+  ? Object.assign({}, (DemoStore.users[id]||{}), deepClone(data))
+  : deepClone(data);
+
+                } else if(name==='books'){
+                  const d=deepClone(data);
+                  if(d.loanedBy) DemoStore.loans[id]=d.loanedBy; else delete DemoStore.loans[id];
+                }
+              },
+              async update(updates){
+                if(name==='users'){
+                  const curr = DemoStore.users[id] || {};
+                  DemoStore.users[id] = applyUpdate(curr, updates);
+                } else if(name==='books'){
+                  const curr = {loanedBy: DemoStore.loans[id] || null};
+                  const updated = applyUpdate(curr, updates);
+                  if(updated.loanedBy) DemoStore.loans[id]=updated.loanedBy; else delete DemoStore.loans[id];
+                }
+              }
+            };
+          }
+        };
+      },
+      batch(){
+        const ops=[];
+        return {
+          set(refData, data){ ops.push({type:'set', refData, data}); },
+          update(refData, updates){ ops.push({type:'update', refData, updates}); },
+          async commit(){
+            for(const op of ops){
+              if(op.type==='set'){
+                if(op.refData._col==='users'){
+                  DemoStore.users[op.refData._id] = deepClone(op.data);
+                }
+              } else if(op.type==='update'){
+                if(op.refData._col==='users'){
+                  const curr = DemoStore.users[op.refData._id] || {};
+                  DemoStore.users[op.refData._id] = applyUpdate(curr, op.updates);
+                }
+              }
+            }
+          }
+        };
+      },
+      FieldValue
+    };
+
+    let fbApp=null, auth=null, db=null, FV=null;
+    if(isDemoMode){
+      auth = DemoAuth; db = DemoDB; FV = DemoDB.FieldValue;
+    }else{
+      fbApp = firebase.initializeApp(firebaseConfig);
+      auth = firebase.auth();
+      db = firebase.firestore();
+      FV = firebase.firestore.FieldValue;
+    }
+  </script>
+
+  <script>
+    /**********************
+     *  메인 앱
+     **********************/
+    const App = {
+      currentUser:null, userData:null, allVocab:{}, allBooks:[],
+      learnedWordsInSession:new Set(), currentBookId:null,
+      currentTestQuestions:[], currentTestVersion:null,
+      bookLoans:{},
+      isAdminUnlocked: false,
+
+      async init(){
+        this.showLoading(true);
+        this.bindEvents();
+        this.loadInitialDataFromCode();
+
+        auth.onAuthStateChanged(async user => {
+          this.showLoading(true);
+          try {
+            if (user) {
+              this.currentUser = user;
+              await this.fetchUserData(user.uid);
+              await this.refreshBookLoans();
+              this.updateRewardsDisplay();
+              this.renderMainMenu();
+              this.showView('main-menu-view');
+            } else {
+              this.currentUser = null;
+              this.userData = null;
+              this.updateRewardsDisplay();
+              document.getElementById('main-menu-grid').innerHTML = '';
+              this.showView('login-view');
+            }
+          } catch (e) {
+            console.error(e);
+            this.showAlert('권한 오류가 발생했습니다. Firestore 규칙을 확인해주세요.');
+            try { await auth.signOut(); } catch(_) {}
+            this.showView('login-view');
+          } finally {
+            this.showLoading(false);
+          }
+        });
+      },
+
+      loadInitialDataFromCode(){
+        Object.assign(this.allVocab, vocabData);
+        this.allBooks = bookData;
+      },
+
+      async refreshBookLoans(){
+        this.bookLoans = {};
+        for(const b of this.allBooks){
+          if(isDemoMode){
+            this.bookLoans[b.id] = DemoStore.loans[b.id] || null;
+          }else{
+            const snap = await db.collection('books').doc(b.id).get();
+            this.bookLoans[b.id] = snap.exists ? (snap.data().loanedBy || null) : null;
+          }
+        }
+      },
+
+      async fetchUserData(uid){
+        const userRef = db.collection('users').doc(uid);
+        const snap = await userRef.get();
+
+        if (!snap.exists) {
+          const email = (auth.currentUser && auth.currentUser.email) || '';
+          const fallbackName = email ? email.split('@')[0] : '학생';
+
+          const initial = {
+            name: fallbackName,
+            email: email,
+            role: 'student',
+            createdAt: FV.serverTimestamp(),
+            lastActivity: FV.serverTimestamp(),
+            points: 0,
+            testResults: {},
+            myLibrary: { reading: [], finished: [] },
+            unknownWords: [],
+            learnHistory: {}
+          };
+
+          await userRef.set(initial, { merge: true });
+          this.userData = { uid, ...initial };
+          return;
+        }
+
+        const data = snap.data() || {};
+        const fixed = {
+  name: data.name || ((auth.currentUser?.email || '').split('@')[0] || '학생'),
+  email: data.email || auth.currentUser?.email || '',
+  role: (data.role || 'student'),
+  points: data.points ?? 0,
+  rewardLog: data.rewardLog || [],   // ★ 여기 추가
+  testResults: data.testResults || {},
+  myLibrary: data.myLibrary || { reading: [], finished: [] },
+  unknownWords: data.unknownWords || [],
+  learnHistory: data.learnHistory || {},
+  lastActivity: FV.serverTimestamp()
+};
+;
+
+        try { await userRef.set(fixed, { merge: true }); } catch(e){ console.warn(e); }
+        this.userData = Object.assign({ uid: snap.id }, data, fixed);
+      },  /* ←←← 여기 콤마가 핵심! (이전 버전 오류의 원인) */
+
+      bindEvents(){
+        document.body.addEventListener('click', e=>{
+          const target = e.target;
+          const button = target.closest('button');
+          const menuItem = target.closest('.menu-item');
+          const popularItem = target.closest('.popular-book-item');
+          const vocabCard = target.closest('.vocab-card');
+          const bookIconCard = target.closest('.book-icon-card');
+          const recommendCard = target.closest('.recommend-card');
+
+          if(button){
+            e.preventDefault();
+            switch(button.id){
+              case 'admin-login-btn': this.tryAdminLogin(); break;
+              case 'login-btn': this.login(); break;
+              case 'show-signup-btn': this.showView('signup-view'); break;
+              case 'signup-btn': this.signUp(); break;
+              case 'forgot-pw-btn': this.openPasswordModal(); break;
+case 'pw-close-btn': document.getElementById('pw-modal').style.display='none'; break;
+case 'pw-search-btn': this.findPassword(); break;
+              case 'back-to-login-btn': this.showView('login-view'); break;
+              case 'logout-button': auth.signOut(); break;
+              case 'finish-test-btn': this.finishTest(); break;
+              case 'add-to-library-btn': this.addCurrentBookToLibrary(); break;
+              case 'submit-review-btn': this.submitReview(); break;
+              case 'show-learned-btn': this.showLearnedWords(); break;
+              case 'show-learn-history-btn': this.openLearnHistoryModal(); break;
+              case 'close-modal-btn': this.closeAlert(); break;
+              case 'close-learn-history-btn': document.getElementById('learn-history-modal').style.display='none'; break;
+              case 'cancel-review-btn': document.getElementById('review-modal').style.display='none'; break;
+              case 'start-reading-btn': this.confirmStartReadingFromDetail(); break;
+              case 'class-detail-start': this.confirmStartReadingFromClassPanel(); break;
+            }
+if (button.classList.contains('dashboard-tab')) {
+  const tab = button.dataset.tab;
+  document.querySelectorAll('.dashboard-tab').forEach(b => b.classList.remove('active'));
+  button.classList.add('active');
+  document.getElementById('dashboard-tab-summary').style.display = (tab === 'summary') ? 'block' : 'none';
+  document.getElementById('dashboard-tab-read').style.display    = (tab === 'read')    ? 'block' : 'none';
+  if (tab === 'read') this.renderMyReadBooks(); // 목록 채우기
+}
+            if(button && button.classList.contains('back-button')){
+              const viewTarget = button.dataset.target || 'main-menu-view';
+              this.showView(viewTarget);
+            }
+            const version = button?.dataset?.version;
+            if(version) this.startTest(parseInt(version));
+          }
+          else if(menuItem) this.handleMenuClick(menuItem.dataset.target);
+          else if(popularItem) this.showClassBookDetail(popularItem.dataset.bookId);
+         else if(bookIconCard) this.showClassBookDetail(bookIconCard.dataset.bookId);
+         else if(recommendCard) this.showClassBookDetail(recommendCard.dataset.bookId);
+
+          else if(vocabCard){
+            const inner = vocabCard.querySelector('.vocab-card-inner');
+            if(!inner) return;
+            inner.classList.toggle('flipped');
+            const word = inner.querySelector('.vocab-card-front').innerText.trim();
+            const definition = inner.querySelector('.vocab-card-back').innerText.trim();
+            const isTrackable = ['vocab-grid-full','book-vocab-grid'].includes(vocabCard.parentElement.id);
+            if(inner.classList.contains('flipped')){
+              if(isTrackable) this.trackWord(word);
+              this.showEnlargedVocab(word,definition);
+            }
+          }
+        });
+
+        document.getElementById('vocab-enlarge-modal').addEventListener('click', ()=>{
+          document.getElementById('vocab-enlarge-modal').style.display='none';
+        });
+      },
+
+      showAlert(msg){ document.getElementById('alert-message').innerText = msg; document.getElementById('alert-modal').style.display='flex'; },
+      closeAlert(){ document.getElementById('alert-modal').style.display='none'; },
+      showLoading(show){ document.getElementById('loading-overlay').style.display = show?'flex':'none'; },
+      showView(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); },
+openPasswordModal(){
+  document.getElementById('pw-name').value='';
+  document.getElementById('pw-email').value='';
+  document.getElementById('pw-modal').style.display='flex';
+},
+
+async findPassword(){
+  const name = document.getElementById('pw-name').value.trim();
+  const email = document.getElementById('pw-email').value.trim();
+  if(!name || !email){ this.showAlert('이름과 아이디(이메일)를 모두 입력해주세요.'); return; }
+
+  if(isDemoMode){
+    const hit = Object.values(DemoStore.users).find(u => (u.email===email && (u.name||'').trim()===name));
+    if(hit && hit.password){
+      this.showAlert(`"${name}"님의 비밀번호는\n\n✅ ${hit.password}\n\n입니다. (데모 모드)`);
+    }else{
+      this.showAlert('일치하는 사용자나 저장된 비밀번호가 없습니다. (데모 모드)');
+    }
+  }else{
+    try{
+      await auth.sendPasswordResetEmail(email);
+      this.showAlert('재설정 메일을 보냈습니다. 메일함을 확인하세요!');
+    }catch(e){
+      this.showAlert(`메일 발송 실패: ${e.message}`);
+    }
+  }
+  document.getElementById('pw-modal').style.display='none';
+},
+
+
+      /* ---------- 인증 ---------- */
+      signUp(){
+        const name = document.getElementById('signup-name-input').value.trim();
+        const email = document.getElementById('signup-email-input').value.trim();
+        const password = document.getElementById('signup-password-input').value;
+
+        if(!name || !email || password.length<6){
+          this.showAlert('이름, 아이디(이메일)를 입력하고, 비밀번호는 6자 이상으로 설정해주세요.');
+          return;
+        }
+
+        this.showLoading(true);
+        auth.createUserWithEmailAndPassword(email,password)
+          .then(async cred=>{
+            const user = cred.user;
+            const initialUserData = {
+              name, email, role:'student',
+              createdAt: FV.serverTimestamp(),
+              lastActivity: FV.serverTimestamp(),
+              points:0, testResults:{},
+              myLibrary:{reading:[], finished:[]},
+              unknownWords:[], learnHistory:{}
+            };
+            await db.collection('users').doc(user.uid).set(initialUserData,{merge:true});
+            this.showAlert('회원가입이 완료되었습니다. 로그인해주세요.');
+            document.getElementById('signup-name-input').value='';
+            document.getElementById('signup-email-input').value='';
+            document.getElementById('signup-password-input').value='';
+            this.showView('login-view');
+          })
+          .catch(error=>this.showAlert(`회원가입 오류: ${error.message}`))
+          .finally(()=>this.showLoading(false));
+      },
+
+      login(){
+        const email = document.getElementById('login-email-input').value.trim();
+        const password = document.getElementById('login-password-input').value;
+        if(!email || !password){ this.showAlert('이메일과 비밀번호를 입력하세요.'); return; }
+        this.showLoading(true);
+        auth.signInWithEmailAndPassword(email,password)
+          .catch(error=>{
+            this.showAlert(`로그인 오류: ${error.message}`);
+            this.showLoading(false);
+          });
+      },
+
+      updateRewardsDisplay(){
+        const display = document.getElementById('rewards-display');
+        if(this.userData && this.userData.role==='student'){
+          display.innerHTML = `🏅 보상: ${this.userData.points || 0}점`;
+          display.style.display='block';
+        }else{
+          display.style.display='none';
+        }
+      },
+
+      /* ---------- 메인 메뉴 ---------- */
+      renderMainMenu(){
+  const name = (this.userData?.name) ? this.userData.name : '사용자';
+  document.getElementById('welcome-message').innerText = `${name}님, 환영합니다!`;
+
+  const menus = {
+    student: [
+      { target: 'vocab-study-view', title: '어휘 학습', desc: '사고도구어 전체 목록을 학습합니다.' },
+      { target: 'test-selection-view', title: '나의 온독지수 검사하기', desc: '버전별 검사를 통해 나의 지수를 확인합니다.' },
+      { target: 'my-library-view', title: '나의 서재', desc: '읽고 있거나 완료한 도서 목록을 봅니다.' },
+      { target: 'my-reviews-view', title: '나의 독서 질문', desc: '내가 작성한 독서 질문을 모아봅니다.'},
+      { target: 'my-dashboard-view', title: '나의 대시보드', desc: '학습 현황과 그래프, 캘린더를 확인합니다.' },
+      { target: 'class-library-view', title: '우리반 서재', desc: '추천 도서와 대출 상태를 확인합니다.' },
+    ],
+    teacher: [
+      { target: 'admin-dashboard-view', title: '관리자(우리반) 페이지', desc: '우리반 대시보드 + 학생별 대시보드' }
+    ]
+  };
+
+  const grid = document.getElementById('main-menu-grid');
+  grid.innerHTML = '';
+
+  // 기본 학생 메뉴
+  menus.student.forEach(menu => {
+    const el = document.createElement('div');
+    el.className = 'menu-item';
+    el.dataset.target = menu.target;
+    el.innerHTML = `<h3>${menu.title}</h3><p>${menu.desc}</p>`;
+    grid.appendChild(el);
+  });
+
+  // 교사 역할에만 관리자 메뉴 노출 (데모 테스트하려면 if문 제거)
+  if ((this.userData?.role||'student') === 'teacher') {
+    menus.teacher.forEach(menu => {
+      const el = document.createElement('div');
+      el.className = 'menu-item';
+      el.dataset.target = menu.target;
+      el.innerHTML = `<h3>${menu.title}</h3><p>${menu.desc}</p>`;
+      grid.appendChild(el);
+    });
+  }
+},
+// 관리자 로그인 시도
+tryAdminLogin(){
+  const pwd = prompt('관리자 비밀번호를 입력하세요:');
+  if (pwd === 'rla48625@') {
+    this.isAdminUnlocked = true;
+    alert('관리자 모드로 로그인되었습니다.');
+    // 관리자 메뉴(타일)도 보이고, 바로 관리자 페이지로 이동
+    this.renderMainMenu();
+    this.renderAdminDashboard().then(()=> this.showView('admin-dashboard-view'));
+  } else {
+    alert('비밀번호가 틀렸습니다.');
+  }
+},
+
+
+      async handleMenuClick(viewId){
+  if(viewId==='test-selection-view') this.renderTestSelection();
+  else if(viewId==='my-dashboard-view') this.renderMyDashboard();
+  else if(viewId==='class-library-view'){ await this.refreshBookLoans(); this.renderClassLibrary(); }
+  else if(viewId==='teacher-dashboard-view') this.renderTeacherDashboard();
+  else if(viewId==='vocab-study-view') this.renderVocabStudy();
+  else if(viewId==='my-reviews-view') this.renderMyReviews();
+  else if(viewId==='my-library-view'){ await this.refreshBookLoans(); this.renderMyLibrary(); }
+  else if(viewId==='admin-dashboard-view'){ await this.renderAdminDashboard(); }
+  this.showView(viewId);
+},
+
+      /************** 테스트 **************/
+      renderTestSelection() {
+  const grid = document.getElementById('test-selection-grid');
+  grid.innerHTML = '';
+
+  // ✅ 총 10개 버전 고정 생성
+  const TOTAL_VERSIONS = 10;
+  const userResults = this.userData.testResults || {};
+
+  for (let i = 1; i <= TOTAL_VERSIONS; i++) {
+    const card = document.createElement('div');
+    card.className = 'test-version-card';
+
+    const result = userResults[`v${i}`];
+    const alreadyTaken = !!result;
+
+    const buttonHtml = alreadyTaken
+      ? `<button disabled>검사완료</button>`
+      : `<button data-version="${i}">검사 시작</button>`;
+
+    const scoreHtml = alreadyTaken
+      ? `<div class="test-score-display">획득 점수: ${result.score}</div>`
+      : `<div class="test-score-display">미응시</div>`;
+
+    card.innerHTML = `
+      <h3>검사 버전 ${i}</h3>
+      ${buttonHtml}
+      ${scoreHtml}
+    `;
+    grid.appendChild(card);
+  }
+},
+
+
+      startTest(version){
+        this.currentTestVersion = version;
+        document.getElementById('test-title').innerText = `온독지수 검사 (버전 ${version})`;
+        const allVocabKeys = Object.keys(this.allVocab);
+        const wordsPerVersion = 10;
+        const startIndex = (version-1)*wordsPerVersion;
+        const endIndex = startIndex + wordsPerVersion;
+        if(allVocabKeys.length < endIndex){ this.showAlert('어휘 데이터가 부족합니다.'); return; }
+        const questionWords = allVocabKeys.slice(startIndex,endIndex);
+        this.currentTestQuestions = [];
+        questionWords.forEach(word=>{
+          const wrong = new Set();
+          while(wrong.size<3){
+            const candidate = allVocabKeys[Math.floor(Math.random()*allVocabKeys.length)];
+            if(candidate!==word) wrong.add(candidate);
+          }
+          const options = [word, ...Array.from(wrong)].sort(()=>Math.random()-0.5);
+          this.currentTestQuestions.push({
+            question: `다음 중 '${this.allVocab[word]}' 라는 뜻을 가진 어휘는 무엇일까요?`,
+            options, answer: options.indexOf(word), correctWord: word
+          });
+        });
+        const container = document.getElementById('test-question-container');
+        container.innerHTML='';
+        this.currentTestQuestions.forEach((q,idx)=>{
+          const qDiv = document.createElement('div');
+          qDiv.style.marginBottom='12px';
+          qDiv.innerHTML = `<p><strong>문제 ${idx+1}.</strong> ${q.question}</p>
+            <div>${q.options.map((opt,i)=>`<label style="display:block;margin:5px;"><input type="radio" name="q${idx}" value="${i}"> ${opt}</label>`).join('')}</div>`;
+          container.appendChild(qDiv);
+        });
+        this.showView('test-view');
+      },
+
+      async finishTest(){
+  // 라디오 응답 수집
+  let score = 0;
+  let allAnswered = true;
+  const detailed = [];
+  const wrongWords = [];
+
+  this.currentTestQuestions.forEach((q, idx) => {
+    const checked = document.querySelector(`input[name="q${idx}"]:checked`);
+    if (!checked) {
+      allAnswered = false;
+      return;
+    }
+    const userIdx = parseInt(checked.value, 10);
+    const isCorrect = (userIdx === q.answer);
+    if (isCorrect) score += 10;
+
+    detailed.push({
+      question: q.question,
+      options: q.options,
+      userAnswer: q.options[userIdx],
+      isCorrect,
+      correctAnswer: q.options[q.answer]
+    });
+
+    if (!isCorrect) wrongWords.push(q.correctWord);
+  });
+
+  if (!allAnswered) {
+    this.showAlert('모든 문항에 응답해주세요.');
+    return;
+  }
+
+  // 온독 점수 (예: 100 + 맞힌개수*10)
+  const ondokScore = 100 + score;
+
+  const resultData = {
+    score: ondokScore,
+    completedAt: FV.serverTimestamp(),
+    answers: detailed,
+    wrongWords
+  };
+
+  this.showLoading(true);
+  try {
+    if (isDemoMode) {
+      const uid = this.currentUser.uid;
+      const u = DemoStore.users[uid];
+
+      // 테스트 결과 저장
+      u.testResults = u.testResults || {};
+      u.testResults[`v${this.currentTestVersion}`] = {
+        ...resultData,
+        completedAt: new Date()
+      };
+
+      // 모르는 단어 추가
+      const set = new Set([...(u.unknownWords||[]), ...wrongWords]);
+      u.unknownWords = Array.from(set);
+
+      // 보상
+      u.points = (u.points || 0) + 50;
+
+      // 보상 로그
+      u.rewardLog = u.rewardLog || [];
+      u.rewardLog.push({ at: new Date(), reason: '온독 검사 완료', amount: 50 });
+
+      u.lastActivity = new Date();
+    } else {
+      await db.collection('users').doc(this.currentUser.uid).update({
+        [`testResults.v${this.currentTestVersion}`]: resultData,
+        unknownWords: FV.arrayUnion(...wrongWords),
+        points: FV.increment(50),
+        lastActivity: FV.serverTimestamp(),
+        rewardLog: FV.arrayUnion({
+          at: new Date().toISOString(),
+          reason: '온독 검사 완료',
+          amount: 50
+        })
+      });
+    }
+
+    // UI 갱신
+    await this.fetchUserData(this.currentUser.uid);
+    this.updateRewardsDisplay();
+    this.renderTestResultDetails(resultData);
+    this.drawTestHistoryChart();
+    this.showView('test-result-view');
+    this.showAlert('검사를 완료하여 50점을 획득했습니다!');
+  } catch (e) {
+    console.error(e);
+    this.showAlert('결과 저장에 실패했습니다.');
+  } finally {
+    this.showLoading(false);
+  }
+},
+
+      renderTestResultDetails(resultData){
+        document.getElementById('result-title').innerText = `검사 버전 ${this.currentTestVersion} 결과 분석`;
+        document.getElementById('result-ondok-score').innerText = resultData.score;
+        const container = document.getElementById('result-details-container');
+        container.innerHTML = '<h3>상세 결과</h3>';
+        resultData.answers.forEach((item, index)=>{
+          const el = document.createElement('div');
+          el.className='result-item';
+          let answerHtml = `<p class="user-answer ${item.isCorrect?'correct':'incorrect'}">나의 답: ${item.userAnswer} ( ${item.isCorrect?'정답':'오답'} )</p>`;
+          if(!item.isCorrect) answerHtml += `<p>정답: ${item.correctAnswer}</p>`;
+          el.innerHTML = `<p><strong>문제 ${index+1}.</strong> ${item.question}</p>${answerHtml}`;
+          container.appendChild(el);
+        });
+      },
+_formatRewardLogItems(log = [], limit = 5) {
+  const arr = (log || [])
+    .slice()
+    .sort((a,b)=> new Date(b.at) - new Date(a.at))
+    .slice(0, limit);
+
+  if (!arr.length) return '<div class="inline-muted">보상 내역이 없습니다.</div>';
+
+  return arr.map(item=>{
+    const when   = item.at ? new Date(item.at).toLocaleString('ko-KR') : '';
+    const reason = item.reason || '';
+    const amt    = (typeof item.amount === 'number') ? `${item.amount}점` : '';
+    return `<div>• ${when} — ${reason} (+${amt})</div>`;
+  }).join('');
+},
+
+
+      /* ---------- 리뷰 ---------- */
+      async submitReview(){
+  const reviewText = document.getElementById('review-textarea').value.trim();
+  if(!reviewText || !this.currentBookId){ this.showAlert('독서 질문을 입력해주세요.'); return; }
+  this.showLoading(true);
+  try{
+    if(isDemoMode){
+      DemoStore.reviews.push({
+        bookId:this.currentBookId, studentUid:this.currentUser.uid,
+        studentName:this.userData.name, reviewText, createdAt:new Date()
+      });
+      const u = DemoStore.users[this.currentUser.uid];
+      u.myLibrary.reading = (u.myLibrary.reading||[]).filter(id=>id!==this.currentBookId);
+      if(!u.myLibrary.finished.includes(this.currentBookId)) u.myLibrary.finished.push(this.currentBookId);
+      u.points = (u.points||0) + 30;
+      u.lastActivity = new Date();
+      if(DemoStore.loans[this.currentBookId]===this.currentUser.uid){ delete DemoStore.loans[this.currentBookId]; }
+
+      // ✅ 보상 로그 추가 (데모)
+      u.rewardLog = u.rewardLog || [];
+      u.rewardLog.push({
+        at: new Date(),
+        reason: '독서 질문 제출',
+        amount: 30
+      });
+
+    }else{
+      const batch = db.batch();
+      const reviewRef = { _col:'reviews', _id:'r_'+(Date.now()+Math.random()) };
+      const userRef = { _col:'users', _id:this.currentUser.uid };
+
+      batch.set(reviewRef, {
+        bookId:this.currentBookId, studentUid:this.currentUser.uid,
+        studentName:this.userData.name, reviewText, createdAt: FV.serverTimestamp()
+      });
+
+      // ✅ 보상 로그 추가 (실서비스: arrayUnion으로 객체 푸시)
+      batch.update(userRef, {
+        'myLibrary.reading': FV.arrayRemove(this.currentBookId),
+        'myLibrary.finished': FV.arrayUnion(this.currentBookId),
+        points: FV.increment(30),
+        lastActivity: FV.serverTimestamp(),
+        rewardLog: FV.arrayUnion({
+          at: new Date().toISOString(),   // 또는 FV.serverTimestamp()를 쓰고 싶으면 문자열 대신 사용 불가 -> ISO 권장
+          reason: '독서 질문 제출',
+          amount: 30
+        })
+      });
+
+      await batch.commit();
+      await db.collection('books').doc(this.currentBookId).set({loanedBy:null},{merge:true});
+    }
+
+    await this.fetchUserData(this.currentUser.uid);
+    await this.refreshBookLoans();
+    this.updateRewardsDisplay();
+    document.getElementById('review-modal').style.display='none';
+    this.showAlert('독서 질문이 제출되고 읽기 완료로 변경되었습니다! (보상 +30)');
+    this.renderMyLibrary();
+    this.showView('my-library-view');
+  }catch(e){
+    console.error(e);
+    this.showAlert('독서 질문 저장에 실패했습니다.');
+  }finally{
+    this.showLoading(false);
+  }
+},
+
+
+      /* ---------- 어휘 ---------- */
+      trackWord(word){
+        this.learnedWordsInSession.add(word);
+        const today = this.fmtDate(new Date());
+        const hist = this.userData.learnHistory || {};
+        const arr = new Set([...(hist[today]||[]), word]);
+        hist[today] = Array.from(arr);
+        this.userData.learnHistory = hist;
+        if(isDemoMode){
+          DemoStore.users[this.currentUser.uid].learnHistory = deepClone(hist);
+        }else{
+          db.collection('users').doc(this.currentUser.uid).set({learnHistory: hist},{merge:true}).catch(()=>{});
+        }
+      },
+      showEnlargedVocab(word, def){
+        document.getElementById('enlarge-vocab-word').innerText = word;
+        document.getElementById('enlarge-vocab-def').innerText = def;
+        document.getElementById('vocab-enlarge-modal').style.display='flex';
+      },
+      showLearnedWords(){
+        if(!this.learnedWordsInSession.size){ this.showAlert('이번 세션에 학습한 어휘가 없습니다.'); return; }
+        const list = Array.from(this.learnedWordsInSession).join(', ');
+        this.showAlert(`이번 세션 학습 어휘: ${list}`);
+      },
+      openLearnHistoryModal(){
+        const wrap = document.getElementById('learn-history-content');
+        wrap.innerHTML='';
+        const hist = this.userData?.learnHistory || {};
+        const dates = Object.keys(hist).sort();
+        if(!dates.length){ wrap.innerHTML = '<p class="inline-muted">학습 기록이 없습니다.</p>'; }
+        else{
+          dates.forEach(d=>{
+            const sec = document.createElement('div');
+            sec.style.margin='8px 0';
+            sec.innerHTML = `<div><strong>${d}</strong></div><div>${(hist[d]||[]).map(w=>`<span class="pill">${w}</span>`).join(' ')}</div>`;
+            wrap.appendChild(sec);
+          });
+        }
+        document.getElementById('learn-history-modal').style.display='flex';
+      },
+      renderVocabStudy(){
+        const grid = document.getElementById('vocab-grid-full');
+        grid.innerHTML='';
+        Object.entries(this.allVocab).forEach(([word,def])=>{
+          grid.appendChild(this.createVocabCard(word,def));
+        });
+      },
+      createVocabCard(word, def){
+        const card = document.createElement('div');
+        card.className='vocab-card';
+        card.innerHTML = `
+          <div class="vocab-card-inner">
+            <div class="vocab-card-front">${word}</div>
+            <div class="vocab-card-back">${def}</div>
+          </div>`;
+        return card;
+      },
+
+      /* ---------- 우리반 서재/대출 ---------- */
+      // ✅ 누적 대출수 기반 인기 목록 + 현재 대출 뱃지 유지
+   async renderClassLibrary(){
+  const recList = document.getElementById('recommendation-list');
+  const popularList = document.getElementById('popular-books-list');
+  const iconList = document.getElementById('class-library-list');
+  recList.innerHTML=''; popularList.innerHTML=''; iconList.innerHTML='';
+
+  // --- 추천 4권(사용자 평균 온독과 가까운 순)은 기존 로직 유지 ---
+  const avg = this.calcAverageOndok() || 200;
+  const sortedByClose = [...this.allBooks]
+    .map(b=>({b, diff:Math.abs((b.ondok_score||0)-avg)}))
+    .sort((x,y)=>x.diff-y.diff)
+    .slice(0,4)
+    .map(x=>x.b);
+
+  sortedByClose.forEach(b=>{
+    const card = document.createElement('div');
+    card.className='recommend-card';
+    card.dataset.bookId = b.id;
+    const loanedBy = this.bookLoans[b.id] || null;
+    const loanText = loanedBy ? (loanedBy===this.currentUser?.uid ? '대출중 (내 대출)' : '대출중') : '대출 가능';
+    card.innerHTML = `<div style="font-weight:700;">${b.title}</div>
+                      <div class="rec-meta">${b.author} · 온독 ${b.ondok_score}</div>
+                      <div class="inline-muted" style="margin-top:6px;">상태: ${loanText}</div>`;
+    recList.appendChild(card);
+  });
+
+  // --- 누적 대출수 집계 ---
+  let loanCountMap = {};
+  try{
+    if (typeof isDemoMode !== 'undefined' && isDemoMode) {
+      // 데모 모드에서 누적 카운트 저장소가 있다면 사용
+      loanCountMap = (DemoStore.loanCounts || {});
+    } else {
+      const snap = await db.collection('books').get();
+      snap.forEach(doc=>{
+        const d = doc.data() || {};
+        loanCountMap[doc.id] = d.loanCount || 0;
+      });
+    }
+  }catch(e){
+    console.error('loanCount 가져오기 실패:', e);
+  }
+
+  // --- 인기 TOP (누적 대출 수 내림차순, 동률이면 제목 가나다) ---
+  const top = [...this.allBooks]
+    .map(b => ({ b, cnt: loanCountMap[b.id] || 0 }))
+    .sort((x,y)=> (y.cnt - x.cnt) || x.b.title.localeCompare(y.b.title))
+    .slice(0,5);
+
+  // 상단 인기 리스트 렌더
+  if (top.length === 0) {
+    popularList.innerHTML = '<p>아직 누적 대출 기록이 없습니다.</p>';
+  } else {
+    top.forEach((x,idx)=>{
+      const row = document.createElement('div');
+      row.className='popular-book-item';
+      row.dataset.bookId = x.b.id;
+      row.innerHTML = `
+        <div class="popular-rank">${idx+1}</div>
+        <div>
+          <div class="popular-title">${x.b.title}</div>
+          <div style="font-size:.9em;color:#636e72;">${x.b.author}</div>
+        </div>
+        <div class="popular-reviews">누적 대출 ${x.cnt}회</div>`;
+      popularList.appendChild(row);
+    });
+  }
+
+  // --- 전체 아이콘 카드(현재 대출 여부 뱃지) ---
+  this.allBooks.forEach(b=>{
+    const card = document.createElement('div');
+    card.className='book-icon-card';
+    card.dataset.bookId=b.id;
+    const loanedBy = this.bookLoans[b.id] || null;
+    const badge = loanedBy ? `<span class="status-badge on-loan">${loanedBy===this.currentUser?.uid?'내 대출':'대출중'}</span>` : '';
+    card.innerHTML = `${badge}
+      <div class="book-icon-card-title">${b.title}</div>
+      <div class="book-icon-card-author">${b.author}</div>
+      <div style="margin-top:10px;font-size:.85em;opacity:.9;">온독 ${b.ondok_score} · ${b.level||''}</div>`;
+    iconList.appendChild(card);
+  });
+
+  document.getElementById('class-detail-wrap').style.display='none';
+},
+
+
+      openClassDetail(bookId){
+        const book = this.allBooks.find(b=>b.id===bookId);
+        if(!book){ this.showAlert('도서 정보를 찾을 수 없습니다.'); return; }
+        this.currentBookId = bookId;
+
+        const title = document.getElementById('class-detail-title');
+        const desc = document.getElementById('class-detail-desc');
+        const vocab = document.getElementById('class-detail-vocab');
+        const startBtn = document.getElementById('class-detail-start');
+        const loanText = document.getElementById('class-detail-loan');
+
+        title.innerText = `${book.title} — ${book.author}`;
+        desc.innerText = book.description || '';
+        vocab.innerHTML='';
+        (book.key_vocab||[]).forEach(k=>{
+          const def = this.allVocab[k] || '(정의 없음)';
+          vocab.appendChild(this.createVocabCard(k,def));
+        });
+
+        const loanedBy = this.bookLoans[bookId] || null;
+        if(loanedBy && loanedBy!==this.currentUser?.uid){
+          startBtn.disabled = true;
+          loanText.innerText = '이 책은 현재 대출중입니다';
+        }else{
+          startBtn.disabled = false;
+          loanText.innerText = '';
+        }
+
+        document.getElementById('class-detail-wrap').style.display='block';
+
+        // 별도 상세 보기 화면도 동기화
+        document.getElementById('class-book-title').innerText = `${book.title} — ${book.author}`;
+        document.getElementById('class-book-desc').innerText = book.description || '';
+        const kv = document.getElementById('class-book-keyvocab'); kv.innerHTML='';
+        (book.key_vocab||[]).forEach(k=>{
+          kv.appendChild(this.createVocabCard(k, this.allVocab[k]||'(정의 없음)'));
+        });
+      },
+
+      async confirmStartReadingFromClassPanel(){
+        if(!this.currentBookId) return;
+        if(!window.confirm('이 책을 읽기 시작하시겠습니까?')) return;
+        await this.startLoanForCurrentBook();
+      },
+
+      async confirmStartReadingFromDetail(){
+        if(!this.currentBookId) return;
+        if(!window.confirm('이 책을 읽기 시작하시겠습니까?')) return;
+        await this.startLoanForCurrentBook();
+      },
+
+      async startLoanForCurrentBook(){
+  const bookId = this.currentBookId;
+  const alreadyLoaned = this.bookLoans[bookId] && this.bookLoans[bookId] !== this.currentUser?.uid;
+  if(alreadyLoaned){ this.showAlert('이 책은 현재 대출중입니다.'); return; }
+
+  this.showLoading(true);
+  try{
+    if(typeof isDemoMode !== 'undefined' && isDemoMode){
+      const u = DemoStore.users[this.currentUser.uid];
+      if(!u.myLibrary.reading.includes(bookId) && !u.myLibrary.finished.includes(bookId)){
+        u.myLibrary.reading.push(bookId);
+      }
+      DemoStore.loans[bookId] = this.currentUser.uid;
+      // ✅ 데모 누적 대출수 +1
+      if(!DemoStore.loanCounts) DemoStore.loanCounts = {};
+      DemoStore.loanCounts[bookId] = (DemoStore.loanCounts[bookId] || 0) + 1;
+
+      u.lastActivity = new Date();
+    }else{
+      await db.collection('users').doc(this.currentUser.uid).update({
+        'myLibrary.reading': FV.arrayUnion(bookId),
+        lastActivity: FV.serverTimestamp()
+      });
+      await db.collection('books').doc(bookId).set({
+        loanedBy: this.currentUser.uid,
+        loanedAt: FV.serverTimestamp(),
+        // ✅ 누적 대출 수 +1
+        loanCount: FV.increment(1)
+      }, { merge:true });
+    }
+
+    await this.fetchUserData(this.currentUser.uid);
+    await this.refreshBookLoans();   // 기존대로 유지
+    this.renderMyLibrary();
+    this.renderClassLibrary();
+    this.renderMyDashboard();
+    this.showAlert('나의 서재에 추가되었습니다. (대출 처리 완료)');
+
+  }catch(e){
+    console.error(e);
+    this.showAlert('처리에 실패했습니다.');
+  }finally{
+    this.showLoading(false);
+  }
+},
+   async renderClassReviews(bookId){
+  const reviewsContainer = document.getElementById('class-reviews-container');
+  reviewsContainer.innerHTML = '<h3 style="margin-top:18px;">✨ 우리반 친구들의 독서 질문 ✨</h3>';
+
+  let reviews = [];
+  if (isDemoMode) {
+    reviews = (DemoStore.reviews || [])
+      .filter(r => r.bookId === bookId)
+      .sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+  } else {
+    const snapshot = await db.collection('reviews')
+      .where('bookId','==', bookId)
+      .orderBy('createdAt','desc')
+      .get();
+    snapshot.forEach(doc => reviews.push({ id: doc.id, ...doc.data() }));
+  }
+
+  if (!reviews.length) {
+    const p = document.createElement('p');
+    p.className = 'inline-muted';
+    p.textContent = '아직 독서 질문이 없습니다.';
+    reviewsContainer.appendChild(p);
+    return;
+  }
+
+  reviews.forEach(review => {
+    const when = review.createdAt
+      ? new Date(
+          review.createdAt.seconds ? review.createdAt.seconds * 1000 : review.createdAt
+        ).toLocaleDateString('ko-KR')
+      : '';
+    const reviewItem = document.createElement('div');
+    reviewItem.className = 'class-review-item';
+    reviewItem.innerHTML = `
+      <p class="student-name">${review.studentName} <span class="inline-muted">(${when})</span></p>
+      <p class="review-text">"${review.reviewText}"</p>`;
+    reviewsContainer.appendChild(reviewItem);
+  });
+},
+
+      /* ---------- 서재/도서 ---------- */
+      showClassBookDetail(bookId){
+        const book = this.allBooks.find(b=>b.id===bookId);
+        if(!book){ this.showAlert('도서 정보를 찾을 수 없습니다.'); return; }
+        this.currentBookId = bookId;
+        document.getElementById('class-book-title').innerText = `${book.title} — ${book.author}`;
+        document.getElementById('class-book-desc').innerText = book.description || '';
+        const kv = document.getElementById('class-book-keyvocab'); kv.innerHTML='';
+        (book.key_vocab||[]).forEach(k=>{
+          kv.appendChild(this.createVocabCard(k, this.allVocab[k]||'(정의 없음)'));
+        });
+        const loanedBy = this.bookLoans[bookId] || null;
+        const startBtn = document.getElementById('start-reading-btn');
+        const loanText = document.getElementById('loan-status-text');
+        if(loanedBy && loanedBy!==this.currentUser?.uid){
+          startBtn.disabled=true; loanText.innerText='이 책은 현재 대출중입니다';
+        }else{
+          startBtn.disabled=false; loanText.innerText='';
+        }
+        this.showView('class-book-detail-view');
+        this.renderClassReviews(bookId);   // ← 상세 화면에서 독서 질문 채우기
+      },
+
+      addCurrentBookToLibrary(){
+        if(!this.currentBookId){ this.showAlert('도서를 먼저 선택해주세요.'); return; }
+        if(!this.userData){ this.showAlert('로그인이 필요합니다.'); return; }
+        if(isDemoMode){
+          const u = DemoStore.users[this.currentUser.uid];
+          if(!u.myLibrary.reading.includes(this.currentBookId) && !u.myLibrary.finished.includes(this.currentBookId)){
+            u.myLibrary.reading.push(this.currentBookId);
+            DemoStore.loans[this.currentBookId] = this.currentUser.uid;
+            u.lastActivity = new Date();
+            this.fetchUserData(this.currentUser.uid).then(async ()=>{
+              await this.refreshBookLoans();
+              this.showAlert('나의 서재에 추가되었습니다.');
+              this.renderMyLibrary();
+              this.renderMyDashboard();
+            });
+          }else this.showAlert('이미 서재에 있습니다.');
+        }else{
+          db.collection('users').doc(this.currentUser.uid).update({
+            'myLibrary.reading': FV.arrayUnion(this.currentBookId),
+            lastActivity: FV.serverTimestamp()
+          }).then(async ()=>{
+            await db.collection('books').doc(this.currentBookId).set({loanedBy:this.currentUser.uid, loanedAt:FV.serverTimestamp()},{merge:true});
+            await this.fetchUserData(this.currentUser.uid);
+            await this.refreshBookLoans();
+            this.showAlert('나의 서재에 추가되었습니다.');
+            this.renderMyLibrary(); this.renderMyDashboard();
+          }).catch(e=>{ console.error(e); this.showAlert('서재 추가에 실패했습니다.'); });
+        }
+      },
+
+      renderMyLibrary(){
+        const reading = document.getElementById('reading-now-list');
+        const finished = document.getElementById('finished-list');
+        reading.innerHTML=''; finished.innerHTML='';
+        const my = this.userData?.myLibrary || {reading:[], finished:[]};
+        const makeCard = (book, finishedMark=false)=>{
+          const card = document.createElement('div');
+          card.className='book-card clickable';
+          const loanedBy = this.bookLoans[book.id] || null;
+          const loanBadge = (!finishedMark && loanedBy) ? `<span class="status-badge on-loan">${loanedBy===this.currentUser?.uid?'내 대출':'대출중'}</span>` : `<span class="status-badge ${finishedMark?'finished':''}">${finishedMark?'완료':'읽는 중'}</span>`;
+          card.innerHTML=`${loanBadge}
+            <h4>${book.title}</h4>
+            <p class="ondok-score">온독지수: ${book.ondok_score}</p>
+            <p style="color:#636e72">${book.author}</p>
+            <p>${book.description||''}</p>`;
+          card.addEventListener('click', ()=>{
+            if(!finishedMark){
+              this.currentBookId = book.id;
+              document.getElementById('review-modal-title').innerText = `${book.title} — 독서 질문 작성`;
+              document.getElementById('review-textarea').value='';
+              document.getElementById('review-modal').style.display='flex';
+            }else{
+              this.showClassBookDetail(book.id);
+            }
+          });
+          return card;
+        };
+        my.reading.forEach(id=>{
+          const book = this.allBooks.find(b=>b.id===id);
+          if(book) reading.appendChild(makeCard(book,false));
+        });
+        my.finished.forEach(id=>{
+          const book = this.allBooks.find(b=>b.id===id);
+          if(book) finished.appendChild(makeCard(book,true));
+        });
+      },
+
+      /* ---------- 대시보드/그래프/캘린더 ---------- */
+      renderMyDashboard(){
+  const avg = this.calcAverageOndok();
+  document.getElementById('dashboard-ondok').innerText = avg ? Math.round(avg) : '-';
+
+  // ✅ [추가] 완료한 책 개수 표시
+  const finishedCount = (this.userData?.myLibrary?.finished || []).length;
+  document.getElementById('dashboard-finished-books').innerText = finishedCount;
+
+  // ✅ [그대로 사용] 읽는 중인 책 리스트(HTML에 위젯 추가해줬음)
+  const rd = document.getElementById('dashboard-reading-list');
+  rd.innerHTML='';
+  const readingIds = this.userData?.myLibrary?.reading || [];
+  if(!readingIds.length){ rd.innerHTML = '<div class="inline-muted">없음</div>'; }
+  else readingIds.slice(0,5).forEach(id=>{
+    const b = this.allBooks.find(x=>x.id===id);
+    const span=document.createElement('span'); 
+    span.className='pill'; 
+    span.innerText = b? b.title : id;
+    rd.appendChild(span);
+  });
+
+  // ✅ [수정] 요약 어휘 목록을 unknown-words-list에 채우도록 변경
+  const need = this.aggregateNeededWords();
+  const top = need.slice(0,8).map(w=>w.word);
+  const shortWrap = document.getElementById('unknown-words-list');
+  shortWrap.innerHTML='';
+  (top.length?top:['없음']).forEach(w=>{
+    const s=document.createElement('span'); s.className='pill'; s.innerText=w; shortWrap.appendChild(s);
+  });
+
+  // 상세/그래프/캘린더
+  const detailWrap = document.getElementById('needed-words-detail'); 
+  detailWrap.innerHTML='';
+  need.forEach(w=>{
+    const s=document.createElement('span'); s.className='pill'; s.innerText=`${w.word} (${w.count})`; 
+    detailWrap.appendChild(s);
+  });
+
+  this.drawTestHistoryChart();
+  this.renderLearnCalendar();
+}
+,
+
+      calcAverageOndok(){
+        const results = this.userData?.testResults || {};
+        const list = Object.values(results).map(r=>r.score).filter(v=>typeof v==='number');
+        if(!list.length) return 0;
+        return list.reduce((a,b)=>a+b,0)/list.length;
+      },
+
+      aggregateNeededWords(){
+        const map = new Map();
+        const tr = this.userData?.testResults || {};
+        Object.values(tr).forEach(r=>{
+          (r.wrongWords||[]).forEach(w=> map.set(w,(map.get(w)||0)+1));
+        });
+        if(map.size===0){
+          (this.userData?.unknownWords||[]).forEach(w=> map.set(w,(map.get(w)||0)+1));
+        }
+        return Array.from(map.entries()).map(([word,count])=>({word,count})).sort((a,b)=>b.count-a.count);
+      },
+
+      drawTestHistoryChart(){
+        const canvas = document.getElementById('test-history-canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.clientWidth||600, H = canvas.clientHeight||280;
+        canvas.width = W*2; canvas.height = H*2;
+        ctx.scale(2,2);
+        ctx.clearRect(0,0,W,H);
+
+        const results = this.userData?.testResults || {};
+        const rows = Object.values(results).map(r=>{
+          const d = this.normalizeDate(r.completedAt);
+          return {date:d, score:r.score};
+        }).filter(x=>x.date && typeof x.score==='number').sort((a,b)=>a.date-b.date);
+
+        ctx.font = '12px system-ui';
+        ctx.strokeStyle = '#d8e6f5'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(40, H-30); ctx.lineTo(W-10, H-30); ctx.moveTo(40, 10); ctx.lineTo(40, H-30); ctx.stroke();
+
+        if(!rows.length){ ctx.fillStyle='#7f8c8d'; ctx.fillText('표시할 측정 결과가 없습니다.', 46, H/2); return; }
+
+        const minScore = Math.min(...rows.map(r=>r.score), 100);
+        const maxScore = Math.max(...rows.map(r=>r.score), 400);
+        const x0=40, x1=W-10, y0=H-30, y1=10;
+        const xr = (x)=> x0 + x*(x1-x0);
+        const yr = (s)=> {
+          const t=(s-minScore)/(maxScore-minScore || 1);
+          return y0 - t*(y0-y1);
+        };
+
+        const dates = rows.map(r=>this.fmtDate(r.date));
+        dates.forEach((d,i)=>{
+          const x = xr(i/(rows.length-1 || 1));
+          ctx.fillStyle='#95a5a6'; ctx.fillText(d.slice(5), x-14, y0+16);
+          ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y0-4); ctx.strokeStyle='#95a5a6'; ctx.stroke();
+        });
+
+        const yTicks = 5;
+        for(let i=0;i<=yTicks;i++){
+          const s = minScore + (maxScore-minScore)*i/yTicks;
+          const y = yr(s);
+          ctx.fillStyle='#95a5a6'; ctx.fillText(Math.round(s), 6, y+4);
+          ctx.strokeStyle='#eef5fc'; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
+        }
+
+        ctx.strokeStyle='#3498db'; ctx.lineWidth=2; ctx.beginPath();
+        rows.forEach((r,i)=>{ const x = xr(i/(rows.length-1 || 1)); const y = yr(r.score); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+        ctx.stroke();
+
+        ctx.fillStyle='#2ecc71';
+        rows.forEach((r,i)=>{ const x = xr(i/(rows.length-1 || 1)); const y = yr(r.score); ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill(); });
+      },
+
+      renderLearnCalendar(){
+        const grid = document.getElementById('calendar-grid');
+        grid.innerHTML='';
+        const hist = this.userData?.learnHistory || {};
+        const today = new Date(); const year = today.getFullYear(); const month = today.getMonth();
+        const first = new Date(year,month,1); const last = new Date(year,month+1,0);
+        const startDow = first.getDay(); const totalCells = Math.ceil((startDow + last.getDate())/7)*7;
+
+        const headerDays=['일','월','화','수','목','금','토'];
+        headerDays.forEach(h=>{ const hd = document.createElement('div'); hd.className='calendar-cell'; hd.style.background='#f9fafb'; hd.style.fontWeight='700'; hd.innerText=h; grid.appendChild(hd); });
+
+        for(let i=0;i<totalCells;i++){
+          const cell = document.createElement('div'); cell.className='calendar-cell';
+          const dateNum = i - startDow + 1;
+          if(dateNum>=1 && dateNum<=last.getDate()){
+            const d = new Date(year,month,dateNum);
+            const key = this.fmtDate(d);
+            const words = hist[key]||[];
+            cell.innerHTML = `<div class="date-num">${dateNum}</div>${words.slice(0,3).map(w=>`<div class="inline-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">• ${w}</div>`).join('')}`;
+            if(words.length){
+              cell.classList.add('has-data'); cell.title = `${key} 학습어휘 ${words.length}개`;
+              cell.addEventListener('click', ()=>{ this.showAlert(`${key} 학습 어휘: ${words.join(', ')}`); });
+            }
+          }
+          grid.appendChild(cell);
+        }
+      },
+async renderMyReadBooks(){
+  const listEl = document.getElementById('my-read-books-list');
+  listEl.innerHTML = '';
+
+  const finishedIds = this.userData?.myLibrary?.finished || [];
+  if (!finishedIds.length){
+    listEl.innerHTML = '<p class="inline-muted">아직 읽은 책이 없습니다.</p>';
+    return;
+  }
+
+  // 내 독서 질문 불러오기
+  let myReviews = [];
+  if (isDemoMode) {
+    myReviews = (DemoStore.reviews || []).filter(r => r.studentUid === this.currentUser?.uid);
+  } else {
+    const snap = await db.collection('reviews')
+      .where('studentUid','==', this.currentUser.uid)
+      .orderBy('createdAt','desc')
+      .get();
+    snap.forEach(doc => myReviews.push({ id: doc.id, ...doc.data() }));
+  }
+
+  // 책ID별 최신 독서 질문 매핑
+  const reviewByBook = new Map();
+  myReviews.forEach(r=>{
+    if(!reviewByBook.has(r.bookId)) reviewByBook.set(r.bookId, []);
+    reviewByBook.get(r.bookId).push(r);
+  });
+
+  finishedIds.forEach(id => {
+    const b = this.allBooks.find(x=>x.id===id);
+    if(!b) return;
+
+    const rev = (reviewByBook.get(id)||[])[0]; // 가장 최근 것
+    const when = rev?.createdAt
+      ? new Date(
+          rev.createdAt.seconds ? rev.createdAt.seconds*1000 : rev.createdAt
+        ).toLocaleDateString('ko-KR')
+      : '';
+
+    const card = document.createElement('div');
+    card.className = 'book-card';
+    card.innerHTML = `
+      <h4>${b.title}</h4>
+      <div class="inline-muted">${b.author}</div>
+      <p style="margin-top:8px;">${
+        rev ? `"${rev.reviewText}"`
+            : '<span class="inline-muted">독서 질문이 없습니다.</span>'
+      }</p>
+      <div class="inline-muted" style="margin-top:6px;">읽은 날짜: ${when || '-'}</div>`;
+    listEl.appendChild(card);
+  });
+},
+
+
+      normalizeDate(ts){ if(!ts) return null; if(ts instanceof Date) return ts; if(ts?.toDate) try{ return ts.toDate(); }catch(e){ return null; } if(typeof ts==='string') return new Date(ts); return null; },
+      fmtDate(d){ const yy=d.getFullYear(); const mm=('0'+(d.getMonth()+1)).slice(-2); const dd=('0'+d.getDate()).slice(-2); return `${yy}-${mm}-${dd}`; },
+
+      /* ---------- 내 리뷰 ---------- */
+      renderMyReviews(){
+        const wrap = document.getElementById('my-reviews-list'); wrap.innerHTML='';
+        const myUid = this.currentUser?.uid;
+        const myRevs = (DemoStore.reviews||[]).filter(r=>r.studentUid===myUid).slice().reverse();
+        if(myRevs.length===0){
+          const p=document.createElement('p'); p.style.textAlign='center'; p.style.color='#7f8c8d'; p.innerText='작성한 독서 질문이 없습니다.'; wrap.appendChild(p); return;
+        }
+        myRevs.forEach(r=>{
+          const book = this.allBooks.find(b=>b.id===r.bookId);
+          const item = document.createElement('div'); item.className='my-review-item';
+          item.innerHTML = `
+            <div class="my-review-book-info">
+              <h4>${book?book.title:'(알 수 없음)'}</h4>
+              <div style="color:#636e72;font-size:.9em;">${book?book.author:''}</div>
+            </div>
+            <div class="my-review-content">
+              <div style="white-space:pre-wrap;">${r.reviewText}</div>
+              <div style="margin-top:6px;color:#7f8c8d;font-size:.85em;">${new Date(r.createdAt).toLocaleString()}</div>
+            </div>`;
+          wrap.appendChild(item);
+        });
+      },
+
+      renderTeacherDashboard(){
+        const tbody = document.querySelector('#students-table tbody'); tbody.innerHTML='';
+        const users = Object.entries(DemoStore.users).map(([uid,u])=>({uid,...u}));
+        users.forEach(u=>{
+          const tr=document.createElement('tr');
+          const avg = (()=>{ const s=Object.values(u.testResults||{}).map(x=>x.score); return s.length?Math.round(s.reduce((a,b)=>a+b,0)/s.length):'-';})();
+          const finishedCount=(u.myLibrary?.finished||[]).length;
+          tr.innerHTML = `<td>${u.name}</td><td>${u.email}</td><td>${avg}</td><td>${finishedCount}</td><td>${u.points||0}</td><td>${new Date(u.lastActivity||Date.now()).toLocaleString()}</td>`;
+          tbody.appendChild(tr);
+        });
+      },
+     /************** 관리자(교사) 페이지 **************/
+async renderAdminDashboard(){
+  // 좌측 학생 목록
+  const listEl = document.getElementById('admin-student-list');
+  listEl.innerHTML = '<div class="inline-muted">불러오는 중...</div>';
+
+  const users = await this._adminFetchAllStudents();
+  listEl.innerHTML = '';
+  if(!users.length){
+    listEl.innerHTML = '<div class="inline-muted">학생이 없습니다.</div>';
+  }else{
+    users.forEach(u=>{
+      const btn = document.createElement('button');
+      btn.className = 'button';
+      btn.style.cssText = 'background:#2980b9; text-align:left; width:100%';
+      btn.textContent = `${u.name||'(이름없음)'} · ${u.email||''}`;
+      btn.addEventListener('click', ()=> this._adminShowStudentDashboard(u));
+      listEl.appendChild(btn);
+    });
+  }
+
+  // 기본: 우측은 우리반 대시보드
+  document.getElementById('class-dashboard-panel').style.display = 'block';
+  document.getElementById('admin-student-dashboard').style.display = 'none';
+  document.getElementById('admin-rewards-panel').style.display = 'none';
+
+  // 우측 우리반 대시보드 렌더
+  this._adminRenderClassDashboard(users);
+
+  // 우측 상단 버튼(학생 대시보드 상태일 때만 보임)
+  const backBtn = document.getElementById('adm-back-to-class');
+  if (backBtn) {
+    backBtn.onclick = ()=>{
+      document.getElementById('class-dashboard-panel').style.display = 'block';
+      document.getElementById('admin-student-dashboard').style.display = 'none';
+      document.getElementById('admin-rewards-panel').style.display = 'none';
+    };
+  }
+
+  // ✅ 탭 버튼 연결
+const tabClass = document.getElementById('adm-tab-class');
+const tabRewards = document.getElementById('adm-tab-rewards');
+
+if (tabClass) {
+  tabClass.onclick = () => {
+    document.getElementById('class-dashboard-panel').style.display = 'block';
+    document.getElementById('admin-student-dashboard').style.display = 'none';
+    document.getElementById('admin-rewards-panel').style.display = 'none';
+    // 최신 users로 클래스 대시보드 갱신
+    this._adminRenderClassDashboard(users);
+  };
+}
+
+if (tabRewards) {
+  // ⬇⬇⬇ 여기에 아래 'tabRewards.onclick = () => { ... }'를 넣거나 기존 내용을 이걸로 교체
+  tabRewards.onclick = () => {
+    document.getElementById('class-dashboard-panel').style.display = 'none';
+    document.getElementById('admin-student-dashboard').style.display = 'none';
+    document.getElementById('admin-rewards-panel').style.display = 'block';
+    this._adminRenderRewards(users);
+  };
+  // ⬆⬆⬆ 여기까지
+}
+
+
+  if (tabRewards) {
+    tabRewards.onclick = () => {
+      document.getElementById('class-dashboard-panel').style.display = 'none';
+      document.getElementById('admin-student-dashboard').style.display = 'none';
+      document.getElementById('admin-rewards-panel').style.display = 'block';
+      // ✅ 보상 테이블 렌더
+      this._adminRenderRewards(users);
+    };
+  }
+},
+
+
+async _adminFetchAllStudents(){
+  // 데모 모드: DemoStore.users
+  if(isDemoMode){
+    return Object.entries(DemoStore.users).map(([uid,u])=>({uid,...u}));
+  }
+  // 실서비스: Firestore users 컬렉션
+  const snap = await db.collection('users').get();
+  const arr = [];
+  snap.forEach(doc=> arr.push({uid:doc.id, ...doc.data()}));
+  return arr;
+},
+
+_adminRenderClassDashboard(users){
+  // 집계
+  const totalStudents = users.length || 1;
+  const finishedCounts = users.map(u => (u.myLibrary?.finished||[]).length);
+  const totalFinished = finishedCounts.reduce((a,b)=>a+b,0);
+  const avgFinished = totalFinished / totalStudents;
+
+  // (1) 우리반 독서 온도계
+const maxCount = 500;
+const percent = Math.min((totalFinished / maxCount) * 100, 100);
+const bar = document.getElementById('thermo-bar');
+const label = document.getElementById('thermo-label');
+if (bar) bar.style.width = percent + '%';
+if (label) label.textContent = `${totalFinished} / ${maxCount} 권`;
+
+
+  // (2) 독서왕 순위
+  const king = document.getElementById('class-reading-king');
+  king.innerHTML='';
+  const byRank = users
+    .map(u=>({ name:u.name||'(이름없음)', cnt:(u.myLibrary?.finished||[]).length }))
+    .sort((a,b)=> b.cnt - a.cnt)
+    .slice(0,10);
+  byRank.forEach(item=>{
+    const li = document.createElement('li');
+    li.textContent = `${item.name} — ${item.cnt}권`;
+    king.appendChild(li);
+  });
+
+  // (3) 사고도구어 워드클라우드(learnHistory 합산)
+  const wordFreq = new Map();
+  users.forEach(u=>{
+    const hist = u.learnHistory || {};
+    Object.values(hist).forEach(arr=>{
+      (arr||[]).forEach(w=> wordFreq.set(w,(wordFreq.get(w)||0)+1));
+    });
+  });
+  this._drawWordCloud(document.getElementById('class-wordcloud-canvas'), wordFreq);
+
+  // (4) 평균 독서 권수
+  document.getElementById('class-avg-books').innerText = `${avgFinished.toFixed(1)} 권`;
+},
+
+_drawThermometer(canvas, value){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.clientWidth||600, H = canvas.clientHeight||180;
+  canvas.width = W*2; canvas.height = H*2; ctx.scale(2,2);
+  ctx.clearRect(0,0,W,H);
+
+  // 눈금/스케일: 0 ~ max(10, value의 1.2배)로 자동 스케일링
+  const maxV = Math.max(10, Math.ceil(value*1.2));
+  const x0 = 60, x1 = W-20, y0 = H-20, y1 = 20;
+
+  // 배경 막대
+  ctx.fillStyle = '#eef5fc'; ctx.fillRect(x0, y1, 40, y0-y1);
+  // 채운 높이
+  const h = (value / maxV) * (y0-y1);
+  ctx.fillStyle = '#3498db'; ctx.fillRect(x0, y0-h, 40, h);
+
+  // 눈금, 텍스트
+  ctx.fillStyle = '#2c3e50'; ctx.font = '12px system-ui';
+  ctx.fillText(`0`, x0+50, y0);
+  ctx.fillText(`${maxV}`, x0+50, y1+4);
+  ctx.fillText(`${value}권`, x0+50, y0-h-6);
+  ctx.fillText('총 독서 권수', x0, 14);
+},
+
+_drawWordCloud(canvas, freqMap){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.clientWidth||600, H = canvas.clientHeight||240;
+  canvas.width = W*2; canvas.height = H*2; ctx.scale(2,2);
+  ctx.clearRect(0,0,W,H);
+
+  // 빈도 배열
+  const items = Array.from(freqMap.entries()).map(([word,count])=>({word,count}));
+  if(!items.length){
+    ctx.fillStyle='#7f8c8d'; ctx.font='14px system-ui';
+    ctx.fillText('데이터가 없습니다.', 16, 24);
+    return;
+  }
+  // 상위 60개까지만, 폰트 크기 12~36px
+  items.sort((a,b)=>b.count-a.count);
+  const top = items.slice(0,60);
+  const maxC = top[0].count || 1;
+  const minC = top[top.length-1].count || 1;
+
+  // 간단 배치: 캔버스를 6x4 격자로 나눠 랜덤 배치(충돌 최소)
+  const cols=6, rows=4;
+  const cells = Array.from({length:cols*rows}, (_,i)=>i);
+  function takeCell(){
+    if(!cells.length) return {x:Math.random()*W, y:Math.random()*H};
+    const i = Math.floor(Math.random()*cells.length);
+    const idx = cells.splice(i,1)[0];
+    const cx = (idx%cols + 0.5) * (W/cols);
+    const cy = (Math.floor(idx/cols)+0.5) * (H/rows);
+    return {x:cx, y:cy};
+  }
+
+  top.forEach((it,idx)=>{
+    const t = (it.count - minC) / (maxC - minC || 1);
+    const fs = Math.round(12 + t*24); // 12~36
+    ctx.font = `${fs}px system-ui`;
+    ctx.fillStyle = '#2c3e50';
+    const {x,y} = takeCell();
+    ctx.save();
+    ctx.translate(x,y);
+    const angle = (Math.random() < 0.15) ? (Math.random()<0.5? -0.25: 0.25) : 0; // 약간 기울임
+    ctx.rotate(angle);
+    const text = it.word;
+    const m = ctx.measureText(text);
+    ctx.fillText(text, -m.width/2, fs/2);
+    ctx.restore();
+  });
+},
+/* ▼▼▼ [추가] 보상 테이블 렌더 함수 */
+_adminRenderRewards(users){
+  const tbody = document.querySelector('#rewards-table tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+
+  const list = users.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+
+  list.forEach(u=>{
+    const tr = document.createElement('tr');
+
+    const nameTd = document.createElement('td');
+    nameTd.style.padding = '8px';
+    nameTd.textContent = u.name || '(이름없음)';
+
+    const emailTd = document.createElement('td');
+    emailTd.style.padding = '8px';
+    emailTd.textContent = u.email || '';
+
+    const pointTd = document.createElement('td');
+    pointTd.style.padding = '8px';
+    pointTd.style.textAlign = 'right';
+    pointTd.textContent = (u.points||0) + ' 점';
+
+    const actionTd = document.createElement('td');
+    actionTd.style.padding = '8px';
+    actionTd.style.textAlign = 'center';
+
+    const wrap = document.createElement('div');
+    wrap.style.display = 'inline-flex';
+    wrap.style.gap = '6px';
+    wrap.style.alignItems = 'center';
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '1';
+    input.value = '10';
+    input.style.width = '80px';
+    input.style.padding = '6px';
+    input.style.border = '1px solid #ddd';
+    input.style.borderRadius = '6px';
+
+    const btn = document.createElement('button');
+    btn.className = 'button give-reward-btn';
+    btn.textContent = '지급';
+    btn.style.background = 'var(--secondary-color)';
+
+    btn.addEventListener('click', async ()=>{
+      const amt = parseInt(input.value, 10);
+      if (!amt || amt < 1) { alert('1 이상 정수를 입력하세요.'); return; }
+      await this._adminGiveReward(u.uid, amt);
+      const fresh = await this._adminFetchAllStudents();
+      this._adminRenderRewards(fresh);
+    });
+
+    wrap.appendChild(input);
+    wrap.appendChild(btn);
+    actionTd.appendChild(wrap);
+
+const recentTd = document.createElement('td');
+recentTd.style.padding = '8px';
+recentTd.innerHTML = this._formatRewardLogItems(u.rewardLog, 3);
+
+tr.appendChild(nameTd);
+tr.appendChild(emailTd);
+tr.appendChild(pointTd);
+tr.appendChild(recentTd);   // ✅ 이제 존재함
+tr.appendChild(actionTd);
+
+
+    tbody.appendChild(tr);
+  });
+},
+
+/* ▼▼▼ [추가] 보상 지급 함수 */
+async _adminGiveReward(uid, amount){
+  try {
+    if (isDemoMode){
+      const u = DemoStore.users[uid];
+      if (!u) { alert('대상 사용자를 찾을 수 없습니다.'); return; }
+      u.points = (u.points||0) + amount;
+      u.lastActivity = new Date();
+
+      // 보상 로그
+      u.rewardLog = u.rewardLog || [];
+      u.rewardLog.push({ at: new Date(), reason: '관리자 지급', amount });
+
+      alert(`보상 ${amount}점을 지급했습니다.`);
+    } else {
+      await db.collection('users').doc(uid).update({
+        points: FV.increment(amount),
+        lastActivity: FV.serverTimestamp(),
+        rewardLog: FV.arrayUnion({
+          at: new Date().toISOString(),
+          reason: '관리자 지급',
+          amount
+        })
+      });
+      alert(`보상 ${amount}점을 지급했습니다.`);
+    }
+  } catch (e) {
+    console.error(e);
+    alert('보상 지급에 실패했습니다.');
+  }
+},
+
+
+/* 학생 대시보드(우측 전환) */
+_adminShowStudentDashboard(user){
+  // 제목
+  document.getElementById('adm-dash-title').innerText = `학생 대시보드 — ${user.name||'(이름없음)'} (${user.email||''})`;
+
+  // 요약
+  const results = user.testResults || {};
+  const scores = Object.values(results).map(r=>r.score).filter(v=>typeof v==='number');
+  const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : '-';
+  document.getElementById('adm-ondok').innerText = avg;
+
+  const finished = (user.myLibrary?.finished||[]);
+  document.getElementById('adm-finished-count').innerText = finished.length;
+
+  const rd = document.getElementById('adm-reading-list');
+  rd.innerHTML='';
+  const reading = (user.myLibrary?.reading||[]);
+  if(!reading.length){ rd.innerHTML='<div class="inline-muted">없음</div>'; }
+  else reading.slice(0,6).forEach(id=>{
+    const b = this.allBooks.find(x=>x.id===id);
+    const span=document.createElement('span'); span.className='pill'; span.innerText = b? b.title : id;
+    rd.appendChild(span);
+  });
+
+  // 필요한 어휘(요약/상세)
+  const need = (()=>{
+    const map = new Map();
+    Object.values(results).forEach(r=> (r.wrongWords||[]).forEach(w=> map.set(w,(map.get(w)||0)+1)));
+    if(map.size===0){ (user.unknownWords||[]).forEach(w=> map.set(w,(map.get(w)||0)+1)); }
+    return Array.from(map.entries()).map(([word,count])=>({word,count})).sort((a,b)=>b.count-a.count);
+  })();
+
+  const shortWrap = document.getElementById('adm-unknown-words'); shortWrap.innerHTML='';
+  (need.slice(0,8).map(w=>w.word).length ? need.slice(0,8).map(w=>w.word) : ['없음'])
+    .forEach(w=>{ const s=document.createElement('span'); s.className='pill'; s.innerText=w; shortWrap.appendChild(s); });
+
+  const detailWrap = document.getElementById('adm-needed-words-detail'); detailWrap.innerHTML='';
+  need.forEach(w=>{ const s=document.createElement('span'); s.className='pill'; s.innerText=`${w.word} (${w.count})`; detailWrap.appendChild(s); });
+
+  // 측정 히스토리
+  this._drawTestHistoryForUser(user, document.getElementById('adm-test-history-canvas'));
+
+// 학습 캘린더
+this._renderLearnCalendarForUser(user, document.getElementById('adm-calendar-grid'));
+
+// 보상 내역 표시
+const logBox = document.getElementById('adm-reward-log');
+if (logBox) {
+  logBox.innerHTML = this._formatRewardLogItems(user.rewardLog, 5);
+}
+
+// 패널 전환
+document.getElementById('class-dashboard-panel').style.display = 'none';
+document.getElementById('admin-student-dashboard').style.display = 'block';
+},
+
+_drawTestHistoryForUser(user, canvas){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.clientWidth||600, H = canvas.clientHeight||260;
+  canvas.width = W*2; canvas.height = H*2; ctx.scale(2,2);
+  ctx.clearRect(0,0,W,H);
+
+  const results = user.testResults || {};
+  const rows = Object.values(results).map(r=>{
+    const d = (r.completedAt instanceof Date) ? r.completedAt
+               : (r.completedAt?.toDate ? r.completedAt.toDate()
+               : (typeof r.completedAt==='string' ? new Date(r.completedAt) : null));
+    return {date:d, score:r.score};
+  }).filter(x=>x.date && typeof x.score==='number').sort((a,b)=>a.date-b.date);
+
+  ctx.font = '12px system-ui';
+  ctx.strokeStyle = '#d8e6f5'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(40, H-30); ctx.lineTo(W-10, H-30); ctx.moveTo(40, 10); ctx.lineTo(40, H-30); ctx.stroke();
+
+  if(!rows.length){ ctx.fillStyle='#7f8c8d'; ctx.fillText('표시할 측정 결과가 없습니다.', 46, H/2); return; }
+
+  const minScore = Math.min(...rows.map(r=>r.score), 100);
+  const maxScore = Math.max(...rows.map(r=>r.score), 400);
+  const x0=40, x1=W-10, y0=H-30, y1=10;
+  const xr = (x)=> x0 + x*(x1-x0);
+  const yr = (s)=> {
+    const t=(s-minScore)/(maxScore-minScore || 1);
+    return y0 - t*(y0-y1);
+  };
+
+  const dates = rows.map(r=> this.fmtDate(r.date));
+  dates.forEach((d,i)=>{
+    const x = xr(i/(rows.length-1 || 1));
+    ctx.fillStyle='#95a5a6'; ctx.fillText(d.slice(5), x-14, y0+16);
+    ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y0-4); ctx.strokeStyle='#95a5a6'; ctx.stroke();
+  });
+
+  // Y ticks
+  const yTicks = 5;
+  for(let i=0;i<=yTicks;i++){
+    const s = minScore + (maxScore-minScore)*i/yTicks;
+    const y = yr(s);
+    ctx.fillStyle='#95a5a6'; ctx.fillText(Math.round(s), 6, y+4);
+    ctx.strokeStyle='#eef5fc'; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
+  }
+
+  ctx.strokeStyle='#3498db'; ctx.lineWidth=2; ctx.beginPath();
+  rows.forEach((r,i)=>{ const x = xr(i/(rows.length-1 || 1)); const y = yr(r.score); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+  ctx.stroke();
+
+  ctx.fillStyle='#2ecc71';
+  rows.forEach((r,i)=>{ const x = xr(i/(rows.length-1 || 1)); const y = yr(r.score); ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill(); });
+},
+
+_renderLearnCalendarForUser(user, gridEl){
+  gridEl.innerHTML='';
+  const hist = user.learnHistory || {};
+  const today = new Date(); const year = today.getFullYear(); const month = today.getMonth();
+  const first = new Date(year,month,1); const last = new Date(year,month+1,0);
+  const startDow = first.getDay(); const totalCells = Math.ceil((startDow + last.getDate())/7)*7;
+
+  // 헤더
+  ['일','월','화','수','목','금','토'].forEach(h=>{ 
+    const hd = document.createElement('div'); hd.className='calendar-cell'; hd.style.background='#f9fafb'; hd.style.fontWeight='700'; hd.innerText=h; gridEl.appendChild(hd);
+  });
+
+  for(let i=0;i<totalCells;i++){
+    const cell = document.createElement('div'); cell.className='calendar-cell';
+    const dateNum = i - startDow + 1;
+    if(dateNum>=1 && dateNum<=last.getDate()){
+      const d = new Date(year,month,dateNum);
+      const key = this.fmtDate(d);
+      const words = hist[key]||[];
+      cell.innerHTML = `<div class="date-num">${dateNum}</div>${words.slice(0,3).map(w=>`<div class="inline-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">• ${w}</div>`).join('')}`;
+      if(words.length){
+        cell.classList.add('has-data'); cell.title = `${key} 학습어휘 ${words.length}개`;
+      }
+    }
+    gridEl.appendChild(cell);
+  }
+}
+    };
+
+    /* 책 상세(키워드 카드) - 재사용 */
+    (function attachBookDetailRenderer(){
+      const titleEl = document.getElementById('book-detail-title');
+      const descEl = document.getElementById('book-detail-desc');
+      const vocabGrid = document.getElementById('book-vocab-grid');
+
+      window.renderBookDetail = function(bookId){
+        const book = App.allBooks.find(b=>b.id===bookId);
+        if(!book){ App.showAlert('도서를 찾을 수 없습니다.'); return; }
+        App.currentBookId = bookId;
+        titleEl.innerText = `${book.title} — ${book.author}`;
+        descEl.innerText = book.description || '';
+        vocabGrid.innerHTML='';
+        (book.key_vocab||[]).forEach(k=>{
+          const def = App.allVocab[k] || '(정의 없음)';
+          vocabGrid.appendChild(App.createVocabCard(k, def));
+        });
+        App.showView('book-detail-view');
+      };
+    })();
+
+    /* 앱 시작 */
+    window.addEventListener('DOMContentLoaded', () => App.init());
+
+    /* 데모 기본 사용자 자동 로그인 */
+    if(isDemoMode && Object.keys(DemoStore.users).length===0){
+      const uid = DemoStore.newUid();
+      DemoStore.users[uid] = {
+        name:'데모사용자', email:'demo@example.com', role:'student',
+        createdAt:new Date(), lastActivity:new Date(),
+        points:120, testResults:{}, myLibrary:{reading:[], finished:[]},
+        unknownWords:[], learnHistory:{}
+      };
+      DemoAuth._user = {uid, email:'demo@example.com'};
+      DemoAuth._listeners.forEach(cb=>cb(DemoAuth._user));
+    }
+  </script>
+</body>
+</html>
